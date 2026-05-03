@@ -170,6 +170,7 @@
         </div>
         <div style="display:flex; gap:15px; font-size:13px; color:var(--dim); flex-wrap: wrap;">
             <div style="text-align:right;">成交量<br><span id="h-vol" style="color:#fff; font-weight:bold; font-size:18px;">--</span></div>
+            <div style="text-align:right; border-left:1px solid var(--border); padding-left:15px;">單量<br><span id="h-svol" style="color:#fff; font-weight:bold; font-size:18px;">--</span></div>
             <div style="text-align:right; border-left:1px solid var(--border); padding-left:15px;">買進<br><span id="h-bid" class="up" style="font-weight:bold; font-size:18px; color:var(--up)">--</span></div>
             <div style="text-align:right;">賣出<br><span id="h-ask" class="dn" style="font-weight:bold; font-size:18px; color:var(--dn)">--</span></div>
         </div>
@@ -182,7 +183,8 @@
         <div style="color:var(--ma5);">MA5 <span id="l-ma5">--</span></div>
         <div style="color:var(--ma20);">MA20 <span id="l-ma20">--</span></div>
         <div style="color:var(--ma60);">MA60 <span id="l-ma60">--</span></div>
-        <div style="color:var(--dim);">上軌 <span id="l-bb-up">--</span> 下軌 <span id="l-bb-dn">--</span></div>
+        <!-- 確保 l-bb-mid 標籤存在，才不會報錯 -->
+        <div style="color:var(--dim);">上軌 <span id="l-bb-up">--</span> 中軌 <span id="l-bb-mid">--</span> 下軌 <span id="l-bb-dn">--</span></div>
       </div>
       <div class="svg-wrap"><svg id="svg-kline"></svg></div>
       <div id="drag-panel" class="draggable-panel">
@@ -776,7 +778,7 @@ function updateUI(res, ma5, ma20, ma60, bb, kd, macd, rsi, lastATR) {
   document.getElementById('h-bid').innerText = (last.c - 0.05).toFixed(2); document.getElementById('h-ask').innerText = (last.c + 0.05).toFixed(2); 
 
   document.getElementById('l-ma5').innerText = ma5[n-1]?.toFixed(2) || '-'; document.getElementById('l-ma20').innerText = ma20[n-1]?.toFixed(2) || '-'; document.getElementById('l-ma60').innerText = ma60[n-1]?.toFixed(2) || '-';
-  document.getElementById('l-bb-up').innerText = bb[n-1]?.up.toFixed(2) || '-'; document.getElementById('l-bb-dn').innerText = bb[n-1]?.dn.toFixed(2) || '-';
+  document.getElementById('l-bb-up').innerText = bb[n-1]?.up.toFixed(2) || '-'; document.getElementById('l-bb-mid').innerText = bb[n-1]?.mid.toFixed(2) || '-'; document.getElementById('l-bb-dn').innerText = bb[n-1]?.dn.toFixed(2) || '-';
   
   if(kd[n-1]) { document.getElementById('l-k').innerText = kd[n-1].k.toFixed(2); document.getElementById('l-d').innerText = kd[n-1].d.toFixed(2); }
   if(macd[n-1]) { document.getElementById('l-dif').innerText = macd[n-1].dif.toFixed(2); document.getElementById('l-macd').innerText = macd[n-1].dea.toFixed(2); document.getElementById('l-osc').innerText = (macd[n-1].osc*2).toFixed(2); document.getElementById('l-osc-lbl').style.color = macd[n-1].osc >= 0 ? 'var(--up)' : 'var(--dn)'; }
