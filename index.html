@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>旗艦版台股看盤系統</title>
 <style>
   html, body { margin: 0; padding: 0; background-color: #050914; color: #e0e8f0; font-size: 14px; height: 100vh; overflow-x: hidden; font-family: 'Microsoft JhengHei', Arial, sans-serif; }
@@ -18,16 +18,16 @@
   }
   * { box-sizing: border-box; }
 
-  #search-bar { display: flex; align-items: center; padding: 8px 15px; background: #03060a; border-bottom: 1px solid var(--border); gap: 12px; flex-shrink: 0; box-shadow: 0 2px 10px rgba(0,0,0,0.5);}
-  #search-bar input { background: #0a1320; border: 1px solid var(--border); color: #fff; padding: 5px 10px; width: 180px; outline: none; border-radius: 3px; font-size: 15px;}
-  #search-bar button { background: #0a1f33; border: 1px solid var(--border); color: var(--cy); padding: 5px 15px; cursor: pointer; border-radius: 3px; font-weight: bold; transition: 0.2s;}
+  #search-bar { display: flex; align-items: center; padding: 8px 15px; background: #03060a; border-bottom: 1px solid var(--border); gap: 12px; flex-shrink: 0; box-shadow: 0 2px 10px rgba(0,0,0,0.5); flex-wrap: wrap;}
+  #search-bar input { background: #0a1320; border: 1px solid var(--border); color: #fff; padding: 5px 10px; width: 140px; outline: none; border-radius: 3px; font-size: 15px;}
+  #search-bar button { background: #0a1f33; border: 1px solid var(--border); color: var(--cy); padding: 5px 15px; cursor: pointer; border-radius: 3px; font-weight: bold; transition: 0.2s; white-space: nowrap;}
   #search-bar button:hover { background: #12304d; }
   #add-fav-btn { background: #003300 !important; border-color: var(--dn) !important; color: var(--dn) !important; margin-left: 5px;}
   #quick-btns { display: flex; gap: 6px; flex-wrap: wrap; margin-left: 10px;}
   .qbtn { background: transparent; border: 1px solid #1a3c5e; color: var(--dim); padding: 4px 8px; font-size: 13px; cursor: pointer; border-radius: 3px; transition: 0.2s;}
   .qbtn:hover { color: var(--yl); border-color: var(--yl); background: rgba(255,204,0,0.1);}
 
-  /* 主佈局 - 獨立滾動，解決下方被擋住的問題 */
+  /* 主佈局 - 電腦版 */
   #app { display: flex; gap: 8px; padding: 8px; height: calc(100vh - 48px); overflow: hidden; }
   .col-l { flex: 6.3; display: flex; flex-direction: column; gap: 8px; min-width: 0; overflow-y: auto; padding-right: 4px; padding-bottom: 10px;}
   .col-r { flex: 3.7; display: flex; flex-direction: column; gap: 8px; min-width: 0; overflow-y: auto; padding-right: 4px; padding-bottom: 10px;}
@@ -41,14 +41,7 @@
   table.dt td { padding: 8px 4px; border-bottom: 1px solid #0f1c2e; }
   table.dt tr:hover td { background: rgba(255,255,255,0.05); }
 
-  /* 技術分析總覽 專用樣式 (靠左對齊) */
-  .tech-row { display: flex; align-items: center; padding: 12px 15px; border-bottom: 1px solid rgba(30,58,95,0.5); font-size: 16px; }
-  .tech-row:last-child { border-bottom: none; }
-  .tech-label { width: 120px; color: var(--dim); display: flex; align-items: center; }
-  .tech-val { flex: 1; text-align: left; font-weight: bold; }
-
-  .legend-bar { display: flex; gap: 15px; padding: 5px 10px; background: #03060a; border-bottom: 1px solid var(--border); font-family: monospace; font-size: 14px; font-weight: bold; flex-shrink: 0; align-items: center; }
-  /* 副圖懸浮指標方塊 */
+  .legend-bar { display: flex; gap: 15px; padding: 5px 10px; background: #03060a; border-bottom: 1px solid var(--border); font-family: monospace; font-size: 14px; font-weight: bold; flex-shrink: 0; align-items: center; flex-wrap: wrap; }
   .ind-box-wrap { position: absolute; top: 30px; right: 6px; background: rgba(3,6,10,0.88); border: 1px solid var(--border); border-radius: 4px; padding: 4px 8px; z-index: 50; user-select: none; min-width: 80px; cursor: move; }
   .ind-box-title { font-size: 11px; color: var(--dim); padding-bottom: 2px; border-bottom: 1px solid #0f1c2e; margin-bottom: 3px; text-align: center; }
   .ind-box { font-size: 13px; font-weight: bold; text-align: center; line-height: 1.4; }
@@ -62,15 +55,14 @@
   #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: rgba(0, 51, 102, 0.95); border: 1px solid var(--cy); color: #fff; padding: 15px 30px; border-radius: 4px; display: none; z-index: 9999; text-align:center; font-size: 16px; box-shadow: 0 0 15px var(--cy);}
   #loading { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.85); z-index: 999; display: none; align-items: center; justify-content: center; color: var(--cy); font-size: 20px; font-weight:bold; letter-spacing: 2px;}
 
-  .price-table { width: 100%; border-collapse: collapse; font-size: 17px; font-weight: bold; text-align: center; }
-  .price-table td { padding: 10px; border: 1px solid #1e3a5f; }
+  .price-table { width: 100%; border-collapse: collapse; font-size: 15px; font-weight: bold; text-align: center; }
+  .price-table td { padding: 8px 4px; border: 1px solid #1e3a5f; }
   .pt-label-res { color: #ff3344; background: rgba(255,51,68,0.15); width: 30%; }
   .pt-label-pull { color: #ffcc00; background: rgba(255,204,0,0.15); width: 30%; }
   .pt-label-sup { color: #00dd55; background: rgba(0,221,85,0.15); width: 30%; }
   .pt-val { color: #fff; letter-spacing: 1px; }
 
-  /* 底部操作建議字體放大 */
-  .adv-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; font-size: 18px; line-height: 1.6; }
+  .adv-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; font-size: 16px; line-height: 1.6; }
   .adv-icon { width: 22px; text-align: center; flex-shrink: 0; }
   
   .mc-box { flex:1; border: 1px solid var(--border); border-radius: 3px; display:flex; flex-direction:column; background: #03060a;}
@@ -79,31 +71,76 @@
   .mc-info { padding: 8px; font-size:14px; line-height:1.7; }
 
   .prob-box { flex: 1; border-radius: 4px; padding: 10px 0; text-align: center; border: 1px solid transparent; background: #0a1320;}
-  .prob-title { font-size: 16px; margin-bottom: 4px; }
-  .prob-val { font-size: 34px; font-weight: bold; font-family: Arial, sans-serif;}
+  .prob-title { font-size: 14px; margin-bottom: 4px; }
+  .prob-val { font-size: 28px; font-weight: bold; font-family: Arial, sans-serif;}
 
-  /* 策略 Modal */
   #strat-modal { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.88); z-index:2000; align-items:center; justify-content:center; }
   .sm-card { background:#080f1e; border:1px solid var(--border); border-radius:6px; padding:16px; margin-bottom:10px; }
   .sm-card-title { font-size:17px; font-weight:bold; margin-bottom:10px; }
   .sm-row { display:flex; justify-content:space-between; font-size:15px; margin-bottom:7px; }
   .sm-label { color:var(--dim); }
   .sm-val { font-weight:bold; }
+
+  /* ================= 手機版響應式設計 (RWD) ================= */
+  @media (max-width: 900px) {
+    #app { 
+        flex-direction: column !important; /* 強制上下堆疊 */
+        height: auto !important; 
+        overflow-y: visible !important; 
+    }
+    .col-l, .col-r { 
+        width: 100% !important; 
+        flex: none !important; 
+        overflow-y: visible !important; 
+        padding-right: 0 !important;
+    }
+    /* 把原本左右並排的區塊，在手機上改成上下堆疊 */
+    div[style*="display: flex; gap: 8px"] { 
+        flex-direction: column !important; 
+    }
+    .panel { 
+        width: 100% !important; 
+        flex: none !important; 
+    }
+    /* 頂部搜尋列排版調整 */
+    #search-bar { 
+        justify-content: flex-start; 
+        padding: 10px;
+    }
+    .draggable-panel {
+        display: none; /* 手機螢幕太小，隱藏浮動的智慧診斷面板 */
+    }
+    /* 價格大字體在手機上稍微縮小 */
+    #h-price { font-size: 28px !important; }
+    #h-name { font-size: 24px !important; }
+    /* 多週期趨勢在手機上也改成上下疊 */
+    .p-body[style*="display:flex; gap:6px; padding:6px;"] {
+        flex-direction: column !important;
+    }
+    /* 型態分析在手機上改成上下疊 */
+    .p-body[style*="display:flex; padding:0;"] {
+        flex-direction: column !important;
+    }
+    .p-body > div[style*="border-right:1px solid var(--border)"] {
+        border-right: none !important;
+        border-bottom: 1px solid var(--border) !important;
+    }
+  }
 </style>
 </head>
 <body>
 
 <div id="search-bar">
-  <span style="color:var(--cy);font-weight:bold; font-size:18px; border-right:1px solid var(--border); padding-right:12px;">旗艦版分析</span>
+  <span style="color:var(--cy);font-weight:bold; font-size:18px; border-right:1px solid var(--border); padding-right:8px; margin-right:4px;">旗艦分析</span>
   <input type="text" id="code-input" placeholder="代碼/名稱..." value="3661">
   <button id="search-btn">查詢</button>
-  <button id="add-fav-btn">+ 加入自選</button>
-  <div id="quick-btns"></div>
-  <span style="color:#334a66; font-size:12px; margin-left:4px; white-space:nowrap;">右鍵移除</span>
-  
+  <button id="add-fav-btn">+ 自選</button>
   <div style="margin-left: auto; display:flex; align-items:center; gap:8px;">
-      <span style="color:var(--dim); font-size:13px;">FinMind Token:</span>
-      <input type="password" id="api-key-input" placeholder="貼上 API Key..." style="width: 140px; background: #0a1320; border: 1px solid var(--border); color: #fff; padding: 4px 8px; border-radius: 3px;">
+      <span style="color:var(--dim); font-size:12px;">Token:</span>
+      <input type="password" id="api-key-input" placeholder="貼上 API Key..." style="width: 100px; background: #0a1320; border: 1px solid var(--border); color: #fff; padding: 4px 8px; border-radius: 3px;">
+  </div>
+  <div style="width:100%; border-top:1px solid #1e3a5f; margin-top:5px; padding-top:5px;">
+    <div id="quick-btns" style="margin-left:0;"></div>
   </div>
 </div>
 <div id="toast"></div>
@@ -124,29 +161,28 @@
   <!-- ================= 左半部 ================= -->
   <div class="col-l">
     <!-- Header 資訊列 -->
-    <div class="panel" style="padding: 12px 18px; flex-direction:row; justify-content:space-between; align-items:center; background: #03060a;">
-        <div style="display:flex; align-items:baseline; gap:12px;">
-            <span id="h-name" style="font-size:32px; font-weight:bold;">--</span>
-            <span id="h-code" style="color:var(--dim); font-size: 18px;">(--)</span>
-            <span id="h-price" style="font-size:36px; font-weight:bold; margin-left:20px;">--</span>
-            <span id="h-chg" style="font-size:20px; font-weight:bold;">--</span>
+    <div class="panel" style="padding: 12px 10px; flex-direction:row; justify-content:space-between; align-items:center; background: #03060a; flex-wrap: wrap; gap:10px;">
+        <div style="display:flex; align-items:baseline; gap:8px; flex-wrap: wrap;">
+            <span id="h-name" style="font-size:28px; font-weight:bold;">--</span>
+            <span id="h-code" style="color:var(--dim); font-size: 16px;">(--)</span>
+            <span id="h-price" style="font-size:32px; font-weight:bold; margin-left:10px;">--</span>
+            <span id="h-chg" style="font-size:18px; font-weight:bold;">--</span>
         </div>
-        <div style="display:flex; gap:30px; font-size:15px; color:var(--dim);">
-            <div style="text-align:right;">成交量<br><span id="h-vol" style="color:#fff; font-weight:bold; font-size:20px;">--</span></div>
-            <div style="text-align:right;">單量<br><span id="h-svol" style="color:#fff; font-weight:bold; font-size:20px;">--</span></div>
-            <div style="text-align:right; border-left:1px solid var(--border); padding-left:30px;">買進<br><span id="h-bid" class="up" style="font-weight:bold; font-size:20px; color:var(--up)">--</span></div>
-            <div style="text-align:right;">賣出<br><span id="h-ask" class="dn" style="font-weight:bold; font-size:20px; color:var(--dn)">--</span></div>
+        <div style="display:flex; gap:15px; font-size:13px; color:var(--dim); flex-wrap: wrap;">
+            <div style="text-align:right;">成交量<br><span id="h-vol" style="color:#fff; font-weight:bold; font-size:18px;">--</span></div>
+            <div style="text-align:right; border-left:1px solid var(--border); padding-left:15px;">買進<br><span id="h-bid" class="up" style="font-weight:bold; font-size:18px; color:var(--up)">--</span></div>
+            <div style="text-align:right;">賣出<br><span id="h-ask" class="dn" style="font-weight:bold; font-size:18px; color:var(--dn)">--</span></div>
         </div>
     </div>
 
     <!-- K線主圖 -->
-    <div class="panel" style="min-height: 320px; position:relative;">
+    <div class="panel" style="min-height: 280px; position:relative;">
       <div class="legend-bar">
         <div style="color:#fff;">日線</div>
         <div style="color:var(--ma5);">MA5 <span id="l-ma5">--</span></div>
         <div style="color:var(--ma20);">MA20 <span id="l-ma20">--</span></div>
         <div style="color:var(--ma60);">MA60 <span id="l-ma60">--</span></div>
-        <div style="color:var(--dim); margin-left:auto;">上軌 <span id="l-bb-up">--</span> 中軌 <span id="l-bb-mid">--</span> 下軌 <span id="l-bb-dn">--</span></div>
+        <div style="color:var(--dim);">上軌 <span id="l-bb-up">--</span> 下軌 <span id="l-bb-dn">--</span></div>
       </div>
       <div class="svg-wrap"><svg id="svg-kline"></svg></div>
       <div id="drag-panel" class="draggable-panel">
@@ -157,7 +193,7 @@
     
     <!-- 副圖：成交量、KD、MACD -->
     <div style="display:flex; flex-direction:column; gap:6px;">
-        <div class="panel" style="height: 150px; position:relative;">
+        <div class="panel" style="height: 140px; position:relative;">
           <div class="legend-bar" style="padding:3px 10px;">
             <div style="color:var(--dim);">成交量</div><div style="color:#fff; margin-left:10px;"><span id="l-v-vol">--</span> 張</div><div style="color:var(--ma5); margin-left:15px;">MA5 <span id="l-v-ma5">--</span></div>
           </div>
@@ -167,7 +203,7 @@
             <div class="ind-box" id="box-vol" style="color:var(--dim)">--</div>
           </div>
         </div>
-        <div class="panel" style="height: 175px; position:relative;">
+        <div class="panel" style="height: 150px; position:relative;">
           <div class="legend-bar" style="padding:3px 10px;">
             <div style="color:var(--dim);">KD (9,3,3)</div><div style="color:var(--up); margin-left:15px;">K <span id="l-k">--</span></div><div style="color:var(--ma20);">D <span id="l-d">--</span></div>
           </div>
@@ -177,7 +213,7 @@
             <div class="ind-box" id="box-kd" style="color:var(--dim)">--</div>
           </div>
         </div>
-        <div class="panel" style="height: 175px; position:relative;">
+        <div class="panel" style="height: 150px; position:relative;">
           <div class="legend-bar" style="padding:3px 10px;">
             <div style="color:var(--dim);">MACD (12,26,9)</div><div style="color:var(--up); margin-left:15px;">DIF <span id="l-dif">--</span></div><div style="color:var(--ma5);">MACD <span id="l-macd">--</span></div><div id="l-osc-lbl" style="color:var(--up);">OSC <span id="l-osc">--</span></div>
           </div>
@@ -272,7 +308,7 @@
   <!-- ================= 右半部 ================= -->
   <div class="col-r">
     
-    <!-- 1. 技術分析總覽 與 主力進出 (並列排版，數值靠左不分散) -->
+    <!-- 1. 技術分析總覽 與 主力進出 -->
     <div style="display: flex; gap: 8px; min-height: 280px;">
         <div class="panel" style="flex: 1.5;">
             <div class="p-head" style="background: linear-gradient(180deg, #1c2e4a 0%, #0a1320 100%);">技術分析總覽</div>
@@ -291,9 +327,9 @@
     <!-- 2. 技術指標總覽 與 操作建議 -->
     <div style="display: flex; gap: 8px;">
         <div class="panel" style="flex: 1.2;">
-          <div class="p-head">技術指標總覽</div>
+          <div class="p-head">指標總覽</div>
           <div class="p-body" style="padding:0;">
-              <table class="dt" id="t-ind" style="font-size:15px; line-height: 1.6;">
+              <table class="dt" id="t-ind" style="font-size:14px; line-height: 1.5;">
                   <!-- JS 寫入 -->
               </table>
           </div>
@@ -301,7 +337,7 @@
 
         <div class="panel" style="flex: 1.5;">
           <div class="p-head">操作建議</div>
-          <div class="p-body" id="p-adv-new" style="padding:20px 15px; display:flex; flex-direction:column; gap:10px;">
+          <div class="p-body" id="p-adv-new" style="padding:15px 10px; display:flex; flex-direction:column; gap:8px;">
               <!-- JS 寫入 -->
           </div>
         </div>
@@ -309,34 +345,31 @@
 
     <!-- 3. 明日預測 -->
     <div class="panel" style="border: 1px solid #ff3333; border-radius: 6px;">
-        <div class="p-head" style="background:none; border:none; color:var(--yl); font-size:20px; padding-top:18px;">🔥 明日漲跌機率預測 (AI模型)</div>
-        <div class="p-body" style="display:flex; gap:12px; padding:18px;">
-            <div class="prob-box" style="border: 1px solid rgba(255,51,68,0.3); border-top:4px solid var(--up);">
+        <div class="p-head" style="background:none; border:none; color:var(--yl); font-size:18px; padding-top:12px;">🔥 漲跌機率預測 (AI模型)</div>
+        <div class="p-body" style="display:flex; gap:8px; padding:12px;">
+            <div class="prob-box" style="border: 1px solid rgba(255,51,68,0.3); border-top:3px solid var(--up);">
                 <div class="prob-title" style="color:var(--up);">上漲機率</div>
                 <div class="prob-val" style="color:var(--up);" id="p-up">--%</div>
-                <div style="font-size:14px; color:var(--dim); margin-top:4px;">(震盪上漲機率)</div>
             </div>
-            <div class="prob-box" style="border: 1px solid rgba(0,221,85,0.3); border-top:4px solid var(--dn);">
+            <div class="prob-box" style="border: 1px solid rgba(0,221,85,0.3); border-top:3px solid var(--dn);">
                 <div class="prob-title" style="color:var(--dn);">下跌機率</div>
                 <div class="prob-val" style="color:var(--dn);" id="p-dn">--%</div>
-                <div style="font-size:14px; color:var(--dim); margin-top:4px;">(震盪下跌機率)</div>
             </div>
-            <div class="prob-box" style="border: 1px solid rgba(255,204,0,0.3); border-top:4px solid var(--yl);">
+            <div class="prob-box" style="border: 1px solid rgba(255,204,0,0.3); border-top:3px solid var(--yl);">
                 <div class="prob-title" style="color:var(--yl);">震盪機率</div>
                 <div class="prob-val" style="color:var(--yl);" id="p-fl">--%</div>
-                <div style="font-size:14px; color:var(--dim); margin-top:4px;">(高檔震盪機率)</div>
             </div>
         </div>
-        <div id="pie-conc" style="text-align:left; padding:0 20px 20px 20px; font-size:16px; color:var(--dim); line-height: 1.7;">預測結論：分析中...</div>
+        <div id="pie-conc" style="text-align:left; padding:0 15px 15px 15px; font-size:14px; color:var(--dim); line-height: 1.6;">預測結論：分析中...</div>
     </div>
 
     <!-- 4. 股海尋寶系統 -->
     <div class="panel" style="border-color: #aa8800; margin-top:auto;">
-      <button onclick="triggerBackend()" style="width:100%; background:linear-gradient(180deg, #332200 0%, #110a00 100%); border:none; border-bottom:1px solid #aa8800; color:#ffcc00; padding:12px; font-size:18px; font-weight:bold; cursor:pointer; letter-spacing: 1px; transition:0.2s;" onmouseover="this.style.background='linear-gradient(180deg, #4a3200 0%, #1a1000 100%)'" onmouseout="this.style.background='linear-gradient(180deg, #332200 0%, #110a00 100%)'">
+      <button onclick="triggerBackend()" style="width:100%; background:linear-gradient(180deg, #332200 0%, #110a00 100%); border:none; border-bottom:1px solid #aa8800; color:#ffcc00; padding:12px; font-size:16px; font-weight:bold; cursor:pointer; letter-spacing: 1px; transition:0.2s;" onmouseover="this.style.background='linear-gradient(180deg, #4a3200 0%, #1a1000 100%)'" onmouseout="this.style.background='linear-gradient(180deg, #332200 0%, #110a00 100%)'">
         ⚡ 股海尋寶系統 (開啟 Python 選單)
       </button>
-      <div style="padding: 12px;">
-        <button onclick="triggerStrategy()" style="width:100%; background:linear-gradient(180deg, #aa1111 0%, #660000 100%); border:1px solid #ff3333; color:#fff; padding:14px; font-size:19px; cursor:pointer; font-weight:bold; letter-spacing: 2px; border-radius:4px;">🚀 策略分析選單</button>
+      <div style="padding: 10px;">
+        <button onclick="triggerStrategy()" style="width:100%; background:linear-gradient(180deg, #aa1111 0%, #660000 100%); border:1px solid #ff3333; color:#fff; padding:10px; font-size:16px; cursor:pointer; font-weight:bold; letter-spacing: 2px; border-radius:4px;">🚀 策略分析選單</button>
       </div>
     </div>
 
@@ -374,7 +407,7 @@ function triggerBackend() {
     showToast('🚀 開啟 Python 選單視窗中...');
     fetch('/api/run_strategy', { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' })
         .then(r => r.ok ? null : showToast('⚠️ 請確認是透過 啟動台股儀表板.bat 開啟'))
-        .catch(() => showToast('⚠️ 請用 啟動台股儀表板.bat 啟動，不要直接開 HTML'));
+        .catch(() => showToast('⚠️ 手機網頁版僅供看盤，尋寶功能請用電腦版開啟'));
 }
 
 function triggerStrategy() {
@@ -580,7 +613,7 @@ function drawText(svg, txt, x, y, c, sz=10, align='start') { const t = mk('text'
 function drawKLine(data, ma5, ma20, ma60, bb, sr) {
   const svg = clearSvg('svg-kline');
   const r = svg.parentElement.getBoundingClientRect(), W = r.width, H = r.height;
-  const pad = {l:5, r:85, t:20, b:25}, dW = W-pad.l-pad.r, dH = H-pad.t-pad.b, n = data.length, cW = dW/n;
+  const pad = {l:5, r:75, t:20, b:25}, dW = W-pad.l-pad.r, dH = H-pad.t-pad.b, n = data.length, cW = dW/n;
 
   let minP = Infinity, maxP = -Infinity;
   for(let i=0; i<n; i++) {
@@ -591,13 +624,13 @@ function drawKLine(data, ma5, ma20, ma60, bb, sr) {
   const getY = v => pad.t + dH - dH*((v-minP)/(maxP-minP)), getX = i => pad.l + i*cW + cW/2;
 
   for(let i=0; i<=4; i++) {
-    const y = pad.t + dH*(i/4); drawLine(svg, pad.l, y, W-pad.r, y, 'rgba(30,58,95,0.4)'); drawText(svg, (maxP-(maxP-minP)*(i/4)).toFixed(2), W-pad.r+5, y, '#88aacc', 12);
+    const y = pad.t + dH*(i/4); drawLine(svg, pad.l, y, W-pad.r, y, 'rgba(30,58,95,0.4)'); drawText(svg, (maxP-(maxP-minP)*(i/4)).toFixed(2), W-pad.r+5, y, '#88aacc', 11);
   }
 
   // 支撐/壓力水平線
   if(sr) {
-    sr.resistances.forEach(v => { if(v>=minP && v<=maxP) { drawLine(svg, pad.l, getY(v), W-pad.r, getY(v), 'rgba(255,80,80,0.45)', 1, '5,3'); drawText(svg, v.toFixed(1), W-pad.r+5, getY(v)-6, '#ff8888', 11); } });
-    sr.supports.forEach(v => { if(v>=minP && v<=maxP) { drawLine(svg, pad.l, getY(v), W-pad.r, getY(v), 'rgba(0,200,80,0.45)', 1, '5,3'); drawText(svg, v.toFixed(1), W-pad.r+5, getY(v)+10, '#00cc55', 11); } });
+    sr.resistances.forEach(v => { if(v>=minP && v<=maxP) { drawLine(svg, pad.l, getY(v), W-pad.r, getY(v), 'rgba(255,80,80,0.45)', 1, '5,3'); drawText(svg, v.toFixed(1), W-pad.r+5, getY(v)-6, '#ff8888', 10); } });
+    sr.supports.forEach(v => { if(v>=minP && v<=maxP) { drawLine(svg, pad.l, getY(v), W-pad.r, getY(v), 'rgba(0,200,80,0.45)', 1, '5,3'); drawText(svg, v.toFixed(1), W-pad.r+5, getY(v)+10, '#00cc55', 10); } });
   }
 
   let dUp='', dDn='', dM5='', dM20='', dM60='';
@@ -615,7 +648,7 @@ function drawKLine(data, ma5, ma20, ma60, bb, sr) {
     const x = getX(i), c = d.c >= d.o ? 'var(--up)' : 'var(--dn)';
     drawLine(svg, x, getY(d.h), x, getY(d.l), c, 1.5);
     svg.appendChild(mk('rect', {x:x-cW*0.35, y:getY(Math.max(d.o, d.c)), width:Math.max(cW*0.7,1), height:Math.max(getY(Math.min(d.o, d.c))-getY(Math.max(d.o, d.c)),2), fill:c}));
-    if(i%Math.floor(n/4)===0) drawText(svg, d.d, x, H-5, '#557799', 11, 'middle');
+    if(i%Math.floor(n/4)===0) drawText(svg, d.d, x, H-5, '#557799', 10, 'middle');
   });
 
   const resTop = maxP, resBot = maxP * 0.97, supLevel = ma60[n-1] || minP, supTop = supLevel * 1.015, supBot = supLevel * 0.985;
@@ -667,7 +700,7 @@ function drawKD(kd) {
   const svg = clearSvg('svg-kd');
   const W = svg.parentElement.clientWidth, H = svg.parentElement.clientHeight, pad={l:5, r:42, t:15, b:5}, dW=W-pad.l-pad.r, dH=H-pad.t-pad.b;
   const getY=v=>pad.t+dH-dH*(v/100), getX=i=>pad.l+i*(dW/kd.length)+(dW/kd.length)/2;
-  [20,50,80].forEach(v => { drawLine(svg, pad.l, getY(v), W-pad.r, getY(v), 'rgba(30,58,95,0.4)'); drawText(svg, v.toString(), W-pad.r+4, getY(v), '#88aacc', 11); });
+  [20,50,80].forEach(v => { drawLine(svg, pad.l, getY(v), W-pad.r, getY(v), 'rgba(30,58,95,0.4)'); drawText(svg, v.toString(), W-pad.r+4, getY(v), '#88aacc', 10); });
   let dK='', dD='';
   kd.forEach((d, i) => { if(d.k!==null) { dK+=`${dK===''?'M':'L'}${getX(i)},${getY(d.k)} `; dD+=`${dD===''?'M':'L'}${getX(i)},${getY(d.d)} `; } });
   drawPath(svg, dK, '#ffff00', 1.5); drawPath(svg, dD, '#00ffff', 1.5);
@@ -679,7 +712,7 @@ function drawMACD(macd) {
   let maxV = 0.01; macd.forEach(m => maxV=Math.max(maxV, Math.abs(m.dif), Math.abs(m.dea), Math.abs(m.osc*2)));
   const getY=v=>pad.t+dH/2-(dH/2)*(v/maxV), getX=i=>pad.l+i*(dW/macd.length)+(dW/macd.length)/2, cW=dW/macd.length;
   drawLine(svg, pad.l, getY(0), W-pad.r, getY(0), 'rgba(30,58,95,0.4)');
-  drawText(svg, '0', W-pad.r+4, getY(0), '#88aacc', 11);
+  drawText(svg, '0', W-pad.r+4, getY(0), '#88aacc', 10);
 
   let dDif='', dDea='';
   macd.forEach((m, i) => {
@@ -735,7 +768,7 @@ function updateUI(res, ma5, ma20, ma60, bb, kd, macd, rsi, lastATR) {
   const chg = last.c - prev.c, pct = prev.c !== 0 ? (chg/prev.c*100).toFixed(2) : "0.00", cColor = chg>=0 ? 'var(--up)':'var(--dn)';
 
   document.getElementById('h-name').innerText = res.name;
-  document.getElementById('h-code').innerHTML = `(${res.code}) <span style="color:var(--yl); margin-left:12px; font-size:15px;">📅 最新資料: ${last.d}</span>`;
+  document.getElementById('h-code').innerHTML = `(${res.code}) <span style="color:var(--yl); margin-left:12px; font-size:14px;">📅 最新資料: ${last.d}</span>`;
   document.getElementById('h-price').innerText = last.c.toFixed(2); document.getElementById('h-price').style.color = cColor;
   document.getElementById('h-chg').innerText = `${chg>0?'▲':'▼'} ${Math.abs(chg).toFixed(2)} (${pct}%)`; document.getElementById('h-chg').style.color = cColor;
   
@@ -743,7 +776,7 @@ function updateUI(res, ma5, ma20, ma60, bb, kd, macd, rsi, lastATR) {
   document.getElementById('h-bid').innerText = (last.c - 0.05).toFixed(2); document.getElementById('h-ask').innerText = (last.c + 0.05).toFixed(2); 
 
   document.getElementById('l-ma5').innerText = ma5[n-1]?.toFixed(2) || '-'; document.getElementById('l-ma20').innerText = ma20[n-1]?.toFixed(2) || '-'; document.getElementById('l-ma60').innerText = ma60[n-1]?.toFixed(2) || '-';
-  document.getElementById('l-bb-up').innerText = bb[n-1]?.up.toFixed(2) || '-'; document.getElementById('l-bb-mid').innerText = bb[n-1]?.mid.toFixed(2) || '-'; document.getElementById('l-bb-dn').innerText = bb[n-1]?.dn.toFixed(2) || '-';
+  document.getElementById('l-bb-up').innerText = bb[n-1]?.up.toFixed(2) || '-'; document.getElementById('l-bb-dn').innerText = bb[n-1]?.dn.toFixed(2) || '-';
   
   if(kd[n-1]) { document.getElementById('l-k').innerText = kd[n-1].k.toFixed(2); document.getElementById('l-d').innerText = kd[n-1].d.toFixed(2); }
   if(macd[n-1]) { document.getElementById('l-dif').innerText = macd[n-1].dif.toFixed(2); document.getElementById('l-macd').innerText = macd[n-1].dea.toFixed(2); document.getElementById('l-osc').innerText = (macd[n-1].osc*2).toFixed(2); document.getElementById('l-osc-lbl').style.color = macd[n-1].osc >= 0 ? 'var(--up)' : 'var(--dn)'; }
@@ -881,7 +914,7 @@ function updateUI(res, ma5, ma20, ma60, bb, kd, macd, rsi, lastATR) {
   const rsiStr = rsiVal>70?'超買注意':(rsiVal<30?'超賣反彈':'中性區間');
   const rsiCol = rsiVal>70?'var(--up)':(rsiVal<30?'var(--dn)':'var(--dim)');
   const tr_i = (lbl, val, arrowC, arrow, desc) =>
-    `<tr><td style="color:var(--dim);padding:5px 4px">${lbl}</td><td style="padding:5px 4px">${val}</td><td style="color:${arrowC};font-weight:bold;font-size:18px;padding:5px 4px">${arrow}</td><td style="padding:5px 4px">${desc}</td></tr>`;
+    `<tr><td style="color:var(--dim);padding:5px 4px">${lbl}</td><td style="padding:5px 4px">${val}</td><td style="color:${arrowC};font-weight:bold;font-size:16px;padding:5px 4px">${arrow}</td><td style="padding:5px 4px">${desc}</td></tr>`;
   document.getElementById('t-ind').innerHTML = `
     <tr><th style="text-align:center;padding:6px 4px">指標</th><th style="text-align:center;padding:6px 4px">數值</th><th style="text-align:center;padding:6px 4px">向</th><th style="text-align:center;padding:6px 4px">解讀</th></tr>
     ${tr_i('KD(9,3)', `${kd[n-1]?kd[n-1].k.toFixed(1):'--'}/${kd[n-1]?kd[n-1].d.toFixed(1):'--'}`, kdBull?'var(--up)':'var(--dn)', kdBull?'⬆':'⬇', kdBull?'黃金交叉':'死亡交叉')}
@@ -1087,6 +1120,7 @@ window.onload = () => {
     
     // 延遲 0.1 秒後執行查詢。如果沒填 Key，系統會自動跳出警告提示。
     setTimeout(() => doSearch('3661'), 100); 
-};</script>
+};
+</script>
 </body>
 </html>
