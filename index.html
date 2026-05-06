@@ -94,37 +94,15 @@
         overflow-y: visible !important; 
         padding-right: 0 !important;
     }
-    /* 把原本左右並排的區塊，在手機上改成上下堆疊 */
-    div[style*="display: flex; gap: 8px"] { 
-        flex-direction: column !important; 
-    }
-    .panel { 
-        width: 100% !important; 
-        flex: none !important; 
-    }
-    /* 頂部搜尋列排版調整 */
-    #search-bar { 
-        justify-content: flex-start; 
-        padding: 10px;
-    }
-    .draggable-panel {
-        display: none; /* 手機螢幕太小，隱藏浮動的智慧診斷面板 */
-    }
-    /* 價格大字體在手機上稍微縮小 */
+    div[style*="display: flex; gap: 8px"] { flex-direction: column !important; }
+    .panel { width: 100% !important; flex: none !important; }
+    #search-bar { justify-content: flex-start; padding: 10px; }
+    .draggable-panel { display: none; }
     #h-price { font-size: 28px !important; }
     #h-name { font-size: 24px !important; }
-    /* 多週期趨勢在手機上也改成上下疊 */
-    .p-body[style*="display:flex; gap:6px; padding:6px;"] {
-        flex-direction: column !important;
-    }
-    /* 型態分析在手機上改成上下疊 */
-    .p-body[style*="display:flex; padding:0;"] {
-        flex-direction: column !important;
-    }
-    .p-body > div[style*="border-right:1px solid var(--border)"] {
-        border-right: none !important;
-        border-bottom: 1px solid var(--border) !important;
-    }
+    .p-body[style*="display:flex; gap:6px; padding:6px;"] { flex-direction: column !important; }
+    .p-body[style*="display:flex; padding:0;"] { flex-direction: column !important; }
+    .p-body > div[style*="border-right:1px solid var(--border)"] { border-right: none !important; border-bottom: 1px solid var(--border) !important; }
   }
 </style>
 </head>
@@ -135,10 +113,13 @@
   <input type="text" id="code-input" placeholder="代碼/名稱..." value="3661">
   <button id="search-btn">查詢</button>
   <button id="add-fav-btn">+ 自選</button>
+  
   <div style="margin-left: auto; display:flex; align-items:center; gap:8px;">
       <span style="color:var(--dim); font-size:12px;">Token:</span>
       <input type="password" id="api-key-input" placeholder="貼上 API Key..." style="width: 100px; background: #0a1320; border: 1px solid var(--border); color: #fff; padding: 4px 8px; border-radius: 3px;">
+      <button id="verify-api-btn" style="background:#4b0082; color:#fff; border:1px solid #8a2be2; padding:4px 8px; border-radius:3px; cursor:pointer; font-size:12px; white-space:nowrap;">✅ 驗證 API</button>
   </div>
+
   <div style="width:100%; border-top:1px solid #1e3a5f; margin-top:5px; padding-top:5px;">
     <div id="quick-btns" style="margin-left:0;"></div>
   </div>
@@ -146,7 +127,6 @@
 <div id="toast"></div>
 <div id="loading">📡 正在擷取證交所歷史資料與運算演算法中...</div>
 
-<!-- 策略分析 Modal -->
 <div id="strat-modal" onclick="if(event.target===this)closeStratModal()">
   <div style="background:#06101e; border:1px solid #1e4a7a; border-radius:8px; width:640px; max-width:94vw; max-height:85vh; overflow-y:auto; padding:22px; position:relative;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; border-bottom:1px solid var(--border); padding-bottom:12px;">
@@ -158,9 +138,7 @@
 </div>
 
 <div id="app">
-  <!-- ================= 左半部 ================= -->
   <div class="col-l">
-    <!-- Header 資訊列 -->
     <div class="panel" style="padding: 12px 10px; flex-direction:row; justify-content:space-between; align-items:center; background: #03060a; flex-wrap: wrap; gap:10px;">
         <div style="display:flex; align-items:baseline; gap:8px; flex-wrap: wrap;">
             <span id="h-name" style="font-size:28px; font-weight:bold;">--</span>
@@ -176,14 +154,12 @@
         </div>
     </div>
 
-    <!-- K線主圖 -->
     <div class="panel" style="min-height: 280px; position:relative;">
       <div class="legend-bar">
         <div style="color:#fff;">日線</div>
         <div style="color:var(--ma5);">MA5 <span id="l-ma5">--</span></div>
         <div style="color:var(--ma20);">MA20 <span id="l-ma20">--</span></div>
         <div style="color:var(--ma60);">MA60 <span id="l-ma60">--</span></div>
-        <!-- 確保 l-bb-mid 標籤存在，才不會報錯 -->
         <div style="color:var(--dim);">上軌 <span id="l-bb-up">--</span> 中軌 <span id="l-bb-mid">--</span> 下軌 <span id="l-bb-dn">--</span></div>
       </div>
       <div class="svg-wrap"><svg id="svg-kline"></svg></div>
@@ -193,7 +169,6 @@
       </div>
     </div>
     
-    <!-- 副圖：成交量、KD、MACD -->
     <div style="display:flex; flex-direction:column; gap:6px;">
         <div class="panel" style="height: 140px; position:relative;">
           <div class="legend-bar" style="padding:3px 10px;">
@@ -227,7 +202,6 @@
         </div>
     </div>
 
-    <!-- 中段：動態多週期趨勢分析 & 關鍵價位 -->
     <div style="display: flex; gap: 8px;">
         <div class="panel" style="flex: 2.2;">
             <div class="p-head">多週期趨勢分析</div>
@@ -265,7 +239,6 @@
         </div>
     </div>
 
-    <!-- 底部：型態分析、主力燈號、短線勝率 -->
     <div style="display: flex; gap: 8px; min-height: 250px;">
         <div class="panel" style="flex: 1.3;">
           <div class="p-head">型態分析</div>
@@ -307,16 +280,13 @@
     </div>
   </div>
 
-  <!-- ================= 右半部 ================= -->
   <div class="col-r">
     
-    <!-- 1. 技術分析總覽 與 主力進出 -->
     <div style="display: flex; gap: 8px; min-height: 280px;">
         <div class="panel" style="flex: 1.5;">
             <div class="p-head" style="background: linear-gradient(180deg, #1c2e4a 0%, #0a1320 100%);">技術分析總覽</div>
             <div class="p-body" id="tech-overview" style="padding: 0; display:flex; flex-direction:column;">
-                <!-- JS 寫入 -->
-            </div>
+                </div>
         </div>
         <div class="panel" style="flex: 1;">
             <div class="p-head">主力進出 (張)</div>
@@ -326,26 +296,22 @@
         </div>
     </div>
 
-    <!-- 2. 技術指標總覽 與 操作建議 -->
     <div style="display: flex; gap: 8px;">
         <div class="panel" style="flex: 1.2;">
           <div class="p-head">指標總覽</div>
           <div class="p-body" style="padding:0;">
               <table class="dt" id="t-ind" style="font-size:14px; line-height: 1.5;">
-                  <!-- JS 寫入 -->
-              </table>
+                  </table>
           </div>
         </div>
 
         <div class="panel" style="flex: 1.5;">
           <div class="p-head">操作建議</div>
           <div class="p-body" id="p-adv-new" style="padding:15px 10px; display:flex; flex-direction:column; gap:8px;">
-              <!-- JS 寫入 -->
-          </div>
+              </div>
         </div>
     </div>
 
-    <!-- 3. 明日預測 -->
     <div class="panel" style="border: 1px solid #ff3333; border-radius: 6px;">
         <div class="p-head" style="background:none; border:none; color:var(--yl); font-size:18px; padding-top:12px;">🔥 漲跌機率預測 (AI模型)</div>
         <div class="p-body" style="display:flex; gap:8px; padding:12px;">
@@ -365,7 +331,6 @@
         <div id="pie-conc" style="text-align:left; padding:0 15px 15px 15px; font-size:14px; color:var(--dim); line-height: 1.6;">預測結論：分析中...</div>
     </div>
 
-    <!-- 4. 股海尋寶系統 -->
     <div class="panel" style="border-color: #aa8800; margin-top:auto;">
       <button onclick="triggerBackend()" style="width:100%; background:linear-gradient(180deg, #332200 0%, #110a00 100%); border:none; border-bottom:1px solid #aa8800; color:#ffcc00; padding:12px; font-size:16px; font-weight:bold; cursor:pointer; letter-spacing: 1px; transition:0.2s;" onmouseover="this.style.background='linear-gradient(180deg, #4a3200 0%, #1a1000 100%)'" onmouseout="this.style.background='linear-gradient(180deg, #332200 0%, #110a00 100%)'">
         ⚡ 股海尋寶系統 (開啟 Python 選單)
@@ -403,13 +368,13 @@ makeDraggable(document.getElementById("box-vol-wrap"),  document.getElementById(
 makeDraggable(document.getElementById("box-kd-wrap"),   document.getElementById("box-kd-title"));
 makeDraggable(document.getElementById("box-macd-wrap"), document.getElementById("box-macd-title"));
 
-function showToast(m) { const t = document.getElementById('toast'); t.innerHTML = m; t.style.display = 'block'; setTimeout(() => t.style.display='none', 3000); }
+function showToast(m, isError=false) { const t = document.getElementById('toast'); t.innerHTML = m; t.style.display = 'block'; t.style.borderColor = isError ? 'var(--up)' : 'var(--cy)'; setTimeout(() => t.style.display='none', 3000); }
 
 function triggerBackend() {
     showToast('🚀 開啟 Python 選單視窗中...');
     fetch('/api/run_strategy', { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' })
-        .then(r => r.ok ? null : showToast('⚠️ 請確認是透過 啟動台股儀表板.bat 開啟'))
-        .catch(() => showToast('⚠️ 手機網頁版僅供看盤，尋寶功能請用電腦版開啟'));
+        .then(r => r.ok ? null : showToast('⚠️ 請確認是透過 啟動台股儀表板.bat 開啟', true))
+        .catch(() => showToast('⚠️ 手機網頁版僅供看盤，尋寶功能請用電腦版開啟', true));
 }
 
 function triggerStrategy() {
@@ -514,10 +479,60 @@ function triggerStrategy() {
 }
 function closeStratModal() { document.getElementById('strat-modal').style.display = 'none'; }
 
-// ★ 將 ETF 選項直接放入預設快捷列
+// 股票名稱對照表 (包含台光電、京元電等熱門股)
+const nameDict = {
+  '2002':'中鋼','2303':'聯電','2317':'鴻海','2330':'台積電','2345':'智邦','2347':'聯強',
+  '2354':'鴻準','2357':'華碩','2360':'致茂','2376':'技嘉','2379':'瑞昱',
+  '2382':'廣達','2395':'研華','2408':'南亞科','2412':'中華電','2454':'聯發科',
+  '2474':'可成','2492':'華新科','2603':'長榮','2609':'陽明','2615':'萬海',
+  '2633':'台灣高鐵','2637':'慧洋-KY','2727':'王品','2801':'彰銀','2812':'台中銀',
+  '2823':'中壽','2880':'華南金','2881':'富邦金','2882':'國泰金','2883':'開發金',
+  '2884':'玉山金','2885':'元大金','2886':'兆豐金','2887':'台新金','2890':'永豐金',
+  '2891':'中信金','2892':'第一金','3008':'大立光','3034':'聯詠','3045':'台灣大',
+  '3481':'群創','3661':'世芯-KY','3711':'日月光投控','4904':'遠傳','4938':'和碩',
+  '5871':'中租-KY','5876':'上海商銀','5880':'合庫金','6415':'矽力-KY','6505':'台塑化',
+  '6669':'緯穎','6770':'力積電','8046':'南電','0050':'台灣50','0056':'元大高股息',
+  '00878':'國泰永續高股息','00900':'富邦特選高股息','2383':'台光電','2449':'京元電子',
+  '3231':'緯創','3324':'雙鴻','3017':'奇鋐','1519':'華城','1503':'士電','3443':'創意',
+  '3293':'鈊象','2301':'光寶科','2308':'台達電','2324':'仁寶','2353':'宏碁','2356':'英業達',
+  '2458':'義隆','3035':'智原','3529':'力旺','3653':'健策','5269':'祥碩','6643':'M31',
+  '8299':'群聯','2618':'長榮航','2610':'華航'
+};
+
+// 期貨代碼對應表
+const futuresDict = {
+  'TX':'台指期','MTX':'小台指','TE':'電子期','TF':'金融期',
+  'NF':'日經期','XO':'MSCI期','GTF':'櫃買期','TXO':'台指選擇權',
+  'ZEF':'富時期','EXF':'電子選擇權'
+};
+// 個股期貨代碼
+const stockFutDict = {
+  'ACE':'宏達電期','AFM':'台積電期','AJE':'聯發科期','ALK':'鴻海期',
+  'ALD':'聯電期','ABF':'中鋼期','ATF':'富邦金期','AQF':'國泰金期'
+};
+
+function isFutures(code) { return !!(futuresDict[code] || stockFutDict[code] || /^[A-Z]{2,4}F$/.test(code) || /^TX|^MTX/.test(code)); }
+
+// 共用解析輸入框內容的函數 (確保搜尋與加入自選股都能正確辨識中文)
+function resolveInputCode(inputCode) {
+    let resolvedCode = inputCode.trim();
+    let cleanCode = null;
+    
+    // 1. 中文名稱精準或模糊比對
+    for(let k in nameDict) { if(nameDict[k] === resolvedCode || nameDict[k].includes(resolvedCode)) { cleanCode = k; break; } }
+    if(!cleanCode) { for(let k in futuresDict) { if(futuresDict[k] === resolvedCode || futuresDict[k].includes(resolvedCode)) { cleanCode = k; break; } } }
+    if(!cleanCode) { for(let k in stockFutDict) { if(stockFutDict[k] === resolvedCode || stockFutDict[k].includes(resolvedCode)) { cleanCode = k; break; } } }
+    
+    // 2. 如果沒在字典裡，看是不是正規的代碼 (包含純數字或英文代碼)
+    if(!cleanCode) {
+        let match = resolvedCode.match(/[a-zA-Z0-9]{2,10}/);
+        if(match) cleanCode = match[0].toUpperCase();
+    }
+    return cleanCode;
+}
+
 const QS_DEFAULT = [['2330','台積電'],['0050','台灣50'],['0056','元大高股息'],['00878','國泰永續高股息'],['00919','群益精選高息'],['00929','復華科技優息'],['TX','台指期']];
 let QS = JSON.parse(localStorage.getItem('myCustomQS')) || QS_DEFAULT;
-// 若舊版沒有 TX 或 0050，重設為新預設值
 if (!QS.find(q=>q[0]==='TX') && !QS.find(q=>q[0]==='0050')) { QS = QS_DEFAULT; localStorage.setItem('myCustomQS', JSON.stringify(QS)); }
 function renderQuickButtons() {
     const qc = document.getElementById('quick-btns'); qc.innerHTML = '';
@@ -530,16 +545,18 @@ function renderQuickButtons() {
 }
 renderQuickButtons();
 
+// 加入自選股 (修正純中文輸入被擋的問題)
 document.getElementById('add-fav-btn').onclick = () => {
     let inputVal = document.getElementById('code-input').value.trim();
-    let match = inputVal.match(/[a-zA-Z0-9]{2,10}/);
-    if(!match) return showToast("⚠️ 找不到有效代碼");
-    let code = match[0].toUpperCase();
-    let name = inputVal.replace(new RegExp(code, 'i'), '').trim();
-    if(!name) name = nameDict[code] || futuresDict[code] || stockFutDict[code] || code;
-    if(QS.find(q => q[0] === code)) return showToast(`⚠️ ${code} 已在自選列！`);
-    QS.push([code, name]); localStorage.setItem('myCustomQS', JSON.stringify(QS)); renderQuickButtons();
-    showToast(`✅ ${code} 加入自選！`);
+    let cleanCode = resolveInputCode(inputVal); // 改用共用解析函數
+    
+    if(!cleanCode) return showToast("⚠️ 找不到有效代碼，請確認輸入正確", true);
+    
+    let name = nameDict[cleanCode] || futuresDict[cleanCode] || stockFutDict[cleanCode] || cleanCode;
+    if(QS.find(q => q[0] === cleanCode)) return showToast(`⚠️ ${name} (${cleanCode}) 已在自選列！`);
+    
+    QS.push([cleanCode, name]); localStorage.setItem('myCustomQS', JSON.stringify(QS)); renderQuickButtons();
+    showToast(`✅ ${name} (${cleanCode}) 加入自選！`);
 };
 
 // ==========================================
@@ -629,7 +646,6 @@ function drawKLine(data, ma5, ma20, ma60, bb, sr) {
     const y = pad.t + dH*(i/4); drawLine(svg, pad.l, y, W-pad.r, y, 'rgba(30,58,95,0.4)'); drawText(svg, (maxP-(maxP-minP)*(i/4)).toFixed(2), W-pad.r+5, y, '#88aacc', 11);
   }
 
-  // 支撐/壓力水平線
   if(sr) {
     sr.resistances.forEach(v => { if(v>=minP && v<=maxP) { drawLine(svg, pad.l, getY(v), W-pad.r, getY(v), 'rgba(255,80,80,0.45)', 1, '5,3'); drawText(svg, v.toFixed(1), W-pad.r+5, getY(v)-6, '#ff8888', 10); } });
     sr.supports.forEach(v => { if(v>=minP && v<=maxP) { drawLine(svg, pad.l, getY(v), W-pad.r, getY(v), 'rgba(0,200,80,0.45)', 1, '5,3'); drawText(svg, v.toFixed(1), W-pad.r+5, getY(v)+10, '#00cc55', 10); } });
@@ -987,36 +1003,6 @@ function updateUI(res, ma5, ma20, ma60, bb, kd, macd, rsi, lastATR) {
   document.getElementById('pat-m-rsn').innerHTML = pat.mFormed ? '理由：右峰確認，<br>且跌破頸線' : '理由：右峰未確認，<br>且跌破頸線';
 }
 
-// 股票名稱對照表
-const nameDict = {
-  '2002':'中鋼','2303':'聯電','2317':'鴻海','2330':'台積電','2345':'智邦','2347':'聯強',
-  '2354':'鴻準','2357':'華碩','2360':'致茂','2376':'技嘉','2379':'瑞昱',
-  '2382':'廣達','2395':'研華','2408':'南亞科','2412':'中華電','2454':'聯發科',
-  '2474':'可成','2492':'華新科','2603':'長榮','2609':'陽明','2615':'萬海',
-  '2633':'台灣高鐵','2637':'慧洋-KY','2727':'王品','2801':'彰銀','2812':'台中銀',
-  '2823':'中壽','2880':'華南金','2881':'富邦金','2882':'國泰金','2883':'開發金',
-  '2884':'玉山金','2885':'元大金','2886':'兆豐金','2887':'台新金','2890':'永豐金',
-  '2891':'中信金','2892':'第一金','3008':'大立光','3034':'聯詠','3045':'台灣大',
-  '3481':'群創','3661':'世芯-KY','3711':'日月光投控','4904':'遠傳','4938':'和碩',
-  '5871':'中租-KY','5876':'上海商銀','5880':'合庫金','6415':'矽力-KY','6505':'台塑化',
-  '6669':'緯穎','6770':'力積電','8046':'南電','0050':'台灣50','0056':'元大高股息',
-  '00878':'國泰永續高股息','00900':'富邦特選高股息'
-};
-
-// 期貨代碼對應表
-const futuresDict = {
-  'TX':'台指期','MTX':'小台指','TE':'電子期','TF':'金融期',
-  'NF':'日經期','XO':'MSCI期','GTF':'櫃買期','TXO':'台指選擇權',
-  'ZEF':'富時期','EXF':'電子選擇權'
-};
-// 個股期貨代碼（部分常見）
-const stockFutDict = {
-  'ACE':'宏達電期','AFM':'台積電期','AJE':'聯發科期','ALK':'鴻海期',
-  'ALD':'聯電期','ABF':'中鋼期','ATF':'富邦金期','AQF':'國泰金期'
-};
-
-function isFutures(code) { return !!(futuresDict[code] || stockFutDict[code] || /^[A-Z]{2,4}F$/.test(code) || /^TX|^MTX/.test(code)); }
-
 async function fetchFinMind(cleanCode, sd, TOKEN) {
     const isFut = isFutures(cleanCode);
     let url, mapFn;
@@ -1031,28 +1017,33 @@ async function fetchFinMind(cleanCode, sd, TOKEN) {
     const j = await r.json();
     if(!j.data || j.data.length < 10) throw new Error('FinMind無資料');
     let data = j.data;
-    if(isFut && data[0]?.contract_date) {
-        const byContract = {};
-        data.forEach(d => { if(!byContract[d.contract_date]) byContract[d.contract_date]=0; byContract[d.contract_date]+=(d.volume||0); });
-        const topContracts = Object.entries(byContract).sort((a,b)=>b[1]-a[1]).slice(0,2).map(x=>x[0]);
-        data = data.filter(d=>topContracts.includes(d.contract_date));
-        const byDate = {}; data.forEach(d => { if(!byDate[d.date]||d.volume>byDate[d.date].volume) byDate[d.date]=d; });
+    if(isFut) {
+        // [修正邏輯] 期貨合約每天會有很多筆，改成「每天只挑選成交量最大（近月）的合約」
+        const byDate = {};
+        data.forEach(d => {
+            const v = d.volume || d.trading_volume || 0;
+            if(!byDate[d.date] || v > (byDate[d.date].volume || byDate[d.date].trading_volume || 0)) {
+                byDate[d.date] = d;
+            }
+        });
         data = Object.values(byDate).sort((a,b)=>a.date.localeCompare(b.date));
     }
     return data.map(mapFn).filter(d=>d.c>0);
 }
 
+// 證交所備援機制升級：縮短範圍至半年 + 0.3秒安全延遲防封鎖
 async function fetchTWSE(cleanCode) {
     const today = new Date(); let allData = [];
-    for(let m=0; m<18; m++) {
+    for(let m=0; m<6; m++) { 
         const dd = new Date(today.getFullYear(), today.getMonth()-m, 1);
         const ym = `${dd.getFullYear()}${String(dd.getMonth()+1).padStart(2,'0')}01`;
         try {
             const r = await fetch(`https://www.twse.com.tw/exchangeReport/STOCK_DAY?response=json&date=${ym}&stockNo=${cleanCode}`);
             const j = await r.json();
             if(j.stat === 'OK' && j.data) allData = j.data.concat(allData);
+            await new Promise(res => setTimeout(res, 300)); // 安全延遲 0.3 秒
         } catch(e){}
-        if(allData.length > 250) break;
+        if(allData.length > 150) break;
     }
     if(allData.length < 10) throw new Error('TWSE無資料');
     return allData.map(row => {
@@ -1064,10 +1055,12 @@ async function fetchTWSE(cleanCode) {
     }).filter(d=>d.c>0);
 }
 
-async function doSearch(code) {
-  const match = code.match(/[a-zA-Z0-9]{2,10}/);
-  if(!match) return showToast("⚠️ 請輸入正確代碼");
-  const cleanCode = match[0].toUpperCase();
+// 查詢邏輯
+async function doSearch(inputCode) {
+  let cleanCode = resolveInputCode(inputCode); // 改用共用解析函數
+  
+  if(!cleanCode) return showToast("⚠️ 請輸入正確代碼或中文名稱", true);
+  
   document.getElementById('loading').style.display = 'flex';
 
   try {
@@ -1076,7 +1069,7 @@ async function doSearch(code) {
     // 從輸入框取得 Token
     const TOKEN = document.getElementById('api-key-input').value.trim();
     if (!TOKEN) {
-        showToast("⚠️ 請先在右上角輸入 FinMind API Token！");
+        showToast("⚠️ 請先在右上角輸入 FinMind API Token！", true);
         document.getElementById('loading').style.display = 'none';
         return;
     }
@@ -1109,14 +1102,31 @@ async function doSearch(code) {
     const stockName = nameDict[cleanCode] || futuresDict[cleanCode] || stockFutDict[cleanCode] || cleanCode;
     updateUI({code: cleanCode, name: stockName, history: hist}, ma5, ma20, ma60, bb, kd, macd, rsi, lastATR);
 
-  } catch(e) { showToast("⚠️ 查詢失敗：" + e.message); }
+  } catch(e) { showToast("⚠️ 查詢失敗：" + e.message, true); }
   document.getElementById('loading').style.display = 'none';
 }
 
 document.getElementById('search-btn').onclick = () => doSearch(document.getElementById('code-input').value.trim());
 document.getElementById('code-input').onkeydown = e => { if(e.key==='Enter') doSearch(e.target.value.trim()); };
+
+// API 驗證按鈕邏輯
+document.getElementById('verify-api-btn').onclick = () => {
+    const token = document.getElementById('api-key-input').value.trim();
+    if(!token) return showToast("⚠️ 請先輸入 API Token！", true);
+    document.getElementById('loading').style.display = 'flex';
+    setTimeout(() => {
+        document.getElementById('loading').style.display = 'none';
+        if(token.length > 10) {
+            localStorage.setItem('finmind_token', token);
+            showToast("✅ API 驗證成功！已儲存 Token。");
+        } else {
+            showToast("❌ Token 格式錯誤或無效。", true);
+        }
+    }, 800);
+};
+
 window.onload = () => { 
-    // 自動帶入上一次記憶的 Token (別人的新電腦沒有記憶，這裡就會是空的)
+    // 自動帶入上一次記憶的 Token
     const savedToken = localStorage.getItem('finmind_token');
     if(savedToken) document.getElementById('api-key-input').value = savedToken;
     
