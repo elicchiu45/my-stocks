@@ -46,9 +46,7 @@
             <div>
                 <label class="text-xs text-gray-400 block mb-1">選擇 AI 模型：</label>
                 <select id="modelSelect" class="bg-gray-900 border border-gray-700 rounded px-3 py-1.5 text-sm text-white w-48 focus:outline-none focus:border-aiGold">
-                    <option value="gemini-2.0-flash">gemini-2.0-flash (預設)</option>
-                    <option value="gemini-1.5-pro">gemini-1.5-pro</option>
-                    <option value="gemini-1.5-flash">gemini-1.5-flash</option>
+                    <option value="gemini-2.5-flash" selected>gemini-2.5-flash (預設)</option>
                 </select>
             </div>
             <div>
@@ -60,7 +58,7 @@
 
     <main class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        <div class="lg:col-span-5 space-y-2.5 bg-gray-900/40 p-4 rounded-xl border border-gray-800 max-h-[750px] overflow-y-auto">
+        <div class="lg:col-span-5 space-y-2.5 bg-gray-900/40 p-4 rounded-xl border border-gray-800 max-h-[850px] overflow-y-auto">
             <h2 class="text-xs font-semibold text-gray-400 mb-3 tracking-wider">💡 點擊下方模組・直接一鍵生成報告</h2>
             
             <button onclick="runAnalysis(1)" class="w-full text-left bg-darkCard hover:border-bullGreen/50 border border-gray-700 p-3 rounded-lg transition-all flex items-center justify-between group">
@@ -144,49 +142,68 @@
             </button>
         </div>
 
-        <div class="lg:col-span-7 bg-darkCard border border-gray-800 rounded-xl p-5 flex flex-col min-h-[600px] lg:min-h-[auto]">
-            <div class="border-b border-gray-800 pb-3 mb-4 flex justify-between items-center">
-                <h2 class="font-bold text-base text-white flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full bg-bullGreen" id="statusDot"></span>
-                    <span id="panelTitle">AI 專家診斷報告</span>
-                </h2>
-                <span id="statusTag" class="text-xs bg-gray-900 px-2 py-1 rounded text-gray-400 font-mono">STANDBY</span>
-            </div>
+        <div class="lg:col-span-7 flex flex-col gap-4">
             
-            <div id="outputConsole" class="flex-1 bg-gray-950 rounded-lg p-4 font-mono text-sm text-gray-300 overflow-y-auto whitespace-pre-wrap leading-relaxed select-text">
-                系統智能模型檢測功能已升級，並支援金鑰自動記憶！
+            <div class="bg-darkCard border border-gray-800 rounded-xl p-5 flex flex-col min-h-[450px]">
+                <div class="border-b border-gray-800 pb-3 mb-4 flex justify-between items-center">
+                    <h2 class="font-bold text-base text-white flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-bullGreen" id="statusDot"></span>
+                        <span id="panelTitle">AI 專家診斷報告</span>
+                    </h2>
+                    <span id="statusTag" class="text-xs bg-gray-900 px-2 py-1 rounded text-gray-400 font-mono">STANDBY</span>
+                </div>
+                
+                <div id="outputConsole" class="flex-1 bg-gray-950 rounded-lg p-4 font-mono text-sm text-gray-300 overflow-y-auto whitespace-pre-wrap leading-relaxed select-text">
+歡迎使用旗艦版 AI 診斷艙！
+本系統已升級「專屬模型過濾器」，剔除了會講英文或無法執行的無效模型。
+系統預設為最新、最穩定的 gemini-2.5-flash 模型，並搭載「獨立懶人包分離技術」。
+
 如果您是第一次使用，請先貼上 API Key 並點擊上方「測試連線」按鈕。
-系統將會自動找出您的金鑰支援的所有模型，並永遠記住您的設定！
+現在請直接點擊左側的「模組按鈕」開始分析股票吧！
+                </div>
             </div>
+
+            <div id="summaryBox" class="bg-gray-900 border border-bullGreen/40 rounded-xl p-5 hidden shadow-lg shadow-bullGreen/5">
+                <div class="flex items-center gap-2 mb-3 border-b border-gray-800 pb-2">
+                    <span class="text-xl">🎯</span>
+                    <h3 class="font-bold text-bullGreen tracking-wide">一秒看懂總結 (懶人包)</h3>
+                </div>
+                <div id="summaryText" class="text-gray-200 text-sm leading-relaxed font-sans whitespace-pre-wrap">
+                    </div>
+            </div>
+
         </div>
 
     </main>
 
     <script>
+        // 【核心防護 1】：強制校正時間，防止 AI 把股票代碼 (如 2002) 當作西元年份！
+        const timeContext = "【系統強制設定】：現在時間是 2026 年！使用者輸入的數字（例如 2002、3661 等）全部都是「台灣股市的股票代碼」，絕對不是西元年份！請以 2026 年的最新市場背景與台股現況進行分析，嚴禁將代碼當作歷史年份！請全程使用繁體中文回答。\n\n";
+        
+        // 【核心防護 2】：強制 AI 輸出分隔線，讓 JS 可以把懶人包切斷獨立顯示
+        const splitKeyword = "====懶人包分隔線====";
+        const summaryPrompt = `\n\n請在您長篇大論的專業分析最後，務必加上一行完全獨立的字串「${splitKeyword}」，然後在這行字串下方寫出懶人包：請用 3 到 5 句一般人都能秒懂的極度白話文，明確點出：1. 總結結論是好是壞？ 2. 最大的機會或致命傷是什麼？`;
+
         const promptTemplates = {
-            1: "你是一位擁有 20 年經驗的華爾街資深股權分析師。請對 [股票代號] 進行深度「價值與增長」分析：\n商業模式與獲利結構： 拆解其主要收入來源，並分析其定價權（Pricing Power）。\n動態競爭優勢： 利用 Porter's Five Forces 模型評估其護城河是否在擴大（Widening）還是縮小。\n財務質量掃描： 專注於 ROE、ROIC 的趨勢，以及營運現金流與淨利的匹配度。\n情境預測： 請建立三個場景（Base, Bull, Bear Case），分別給出未來 24 個月的目標價預期，並列出支撐各場景的核心假設（Assumptions）。",
-            2: "請評估 [股票代號] 的競爭壁壘（Economic Moat）。請採用 Morningstar 的框架，針對以下維度進行 1-10 分的定量評分，並提供定性理由：\n無形資產： 品牌溢價能力、專利佈局、監管准入。\n轉換成本： 客戶流失率（Churn Rate）與黏性。\n網絡效應： 用戶基數增加如何提升平台價值。\n成本優勢： 規模效應或獨特資源。 要求： 請將其與競爭對手進行橫向對比，並判斷該公司的「結構性優勢」在未來 5 年內是否具備可持續性。",
-            3: "請對投資 [股票代號] 進行極壓測試（Stress Test）與風險識別。請將風險分為以下矩陣：\n宏觀風險： 利率敏感度、匯率波動、地緣政治影響。\n微觀風險： 供應鏈集中度、關鍵人才流失、研發失敗。\n尾部風險（Tail Risk）： 可能導致股價腰斬的「黑天鵝」事件。 要求： 請按「發生機率」與「影響程度」進行權重排序，並針對每一項風險提供一個投資者應監測的「先行指標（Leading Indicator）」。",
-            4: "你是一位專注於「成長股價值投資」的避險基金經理。請為 [股票代號] 撰寫一份投資提案（Investment Pitch）：\n核心投資論點（Core Thesis）： 為什麼市場目前的定價是錯誤的？（Variant Perception）。\n籌碼面分析： 分析 13F 報告中的機構持倉變動趨勢。\n關鍵催化劑（Catalysts）： 未來 6-12 個月內，哪些具體事件（如產品發佈、收購、回購計畫）會觸發估值修復？\n反面論點： 什麼情況下你會承認自己判斷錯誤並果斷止損？",
-            5: "請深度拆解 [股票代號] 最新的財報（Earnings Call）：\n數據對抗： 將營收、EPS、毛利率與「市場預期（Consensus）」進行對比，指出 beat/miss 的具體百分比。\n財報「潛台詞」： 分析管理層在電話會議中對未來指引（Guidance）的語氣變化。\n非財務指標： 關注庫存周轉率、訂閱用戶數、或是研發投入比的異常變化。\n市場情緒解析： 為什麼股價在財報後出現了上漲/下跌？是利多出盡還是基本面反反轉？",
-            6: "請分析 [股票代號] 過去 5 年的財務質量演變，並判斷其「財務基因」是否正在優化：\n資本配置效率： 分析其自由現金流（FCF）是用於研發、股息派發、股份回購還是償還債務？\n獲利含金量： 營運現金流與淨利的比例是否長期大於 1？\n槓桿結構： 利息保障倍數與債務到期分佈。 結論要求： 根據 DuPont Analysis（杜邦分析法），說明其 ROE 的增長是來自於「利潤率」、「周轉率」還是「財務槓桿」？",
-            7: "請對 [股票代號] 進行多維度估值建模：\n相對估值： 提供過去 5 年的 P/E、P/S、EV/EBITDA 的分位點（Percentile），判斷目前處於歷史高位還是低位。\n絕對估值（DCF）： 假設未來 5 年自由現金流增長率為合理數值，折現率（WACC）及終值（Terminal Value）倍數，計算其每股內在價值。\n安全邊際： 目前股價較內在價值折價了多少？ 要求： 請給出「買入區間」、「合理價位」與「減持區間」。",
-            8: "分析 [股票代號] 的長期增長曲線與「期權價值」：\nTAM/SAM/SOM： 量化其潛在市場規模，並預估其市佔率提升的空間。\n技術曲線： 該公司在 AI、半導體或相關領域的研發投入如何轉化為實際營收？\n第二增長曲線： 除了核心業務，是否有正在孵化的新產品線可能在未來 5 年貢獻 20% 以上的營收？\n單元經濟（Unit Economics）： 隨著規模擴大，其邊際成本是否有效遞減？",
-            9: "請模擬一場針對 [股票代號] 的專業辯論。\n多方分析師（Bull）： 必須從「隱含增長率」與「結構性改進」出發，構建最強的買入邏輯。\n空方分析師（Bear）： 必須從「市場高估、週期性衰退、競爭惡化」出發，構建最強的沽空邏輯。 規則： 雙方必須互相反駁對方的關鍵數據點（例如：多方說營收增長，空方反駁是靠燒錢換來的）。 總結： 請扮演裁判，指出目前市場共識（Consensus）忽視了哪一個關鍵維度。",
-            10: "請為 [股票代號] 提供一份「擇時與倉位控制」建議：\n宏觀背景： 當前利率環境與行業週期是否利好該股？\n技術面配合： 結合移動平均線（20/50/200日）與 RSI 指標，目前是處於超買還是超賣？\n分批建倉策略： 如果現在買入，首筆資金比例應為多少？在什麼價格觸發分批加倉？\n出場計畫： 設定明確的止盈位（Take-profit）與止損位（Stop-loss），並給出觸發這些價位的「邏輯變更」前提（例如：除非營收增長低於 10%，否則不賣出）。"
+            1: timeContext + "你是一位擁有 20 年經驗的華爾街資深股權分析師。請對 [股票代號] 進行深度「價值與增長」分析：\n商業模式與獲利結構： 拆解其主要收入來源，並分析其定價權（Pricing Power）。\n動態競爭優勢： 利用 Porter's Five Forces 模型評估其護城河是否在擴大（Widening）還是縮小。\n財務質量掃描： 專注於 ROE、ROIC 的趨勢，以及營運現金流與淨利的匹配度。\n情境預測： 請建立三個場景（Base, Bull, Bear Case），分別給出未來 24 個月的目標價預期，並列出支撐各場景的核心假設（Assumptions）。" + summaryPrompt,
+            2: timeContext + "請評估 [股票代號] 的競爭壁壘（Economic Moat）。請採用 Morningstar 的框架，針對以下維度進行 1-10 分的定量評分，並提供定性理由：\n無形資產： 品牌溢價能力、專利佈局、監管准入。\n轉換成本： 客戶流失率（Churn Rate）與黏性。\n網絡效應： 用戶基數增加如何提升平台價值。\n成本優勢： 規模效應或獨特資源。 要求： 請將其與競爭對手進行橫向對比，並判斷該公司的「結構性優勢」在未來 5 年內是否具備可持續性。" + summaryPrompt,
+            3: timeContext + "請對投資 [股票代號] 進行極壓測試（Stress Test）與風險識別。請將風險分為以下矩陣：\n宏觀風險： 利率敏感度、匯率波動、地緣政治影響。\n微觀風險： 供應鏈集中度、關鍵人才流失、研發失敗。\n尾部風險（Tail Risk）： 可能導致股價腰斬的「黑天鵝」事件。 要求： 請按「發生機率」與「影響程度」進行權重排序，並針對每一項風險提供一個投資者應監測的「先行指標（Leading Indicator）」。" + summaryPrompt,
+            4: timeContext + "你是一位專注於「成長股價值投資」的避險基金經理。請為 [股票代號] 撰寫一份投資提案（Investment Pitch）：\n核心投資論點（Core Thesis）： 為什麼市場目前的定價是錯誤的？（Variant Perception）。\n籌碼面分析： 分析 13F 報告中的機構持倉變動趨勢。\n關鍵催化劑（Catalysts）： 未來 6-12 個月內，哪些具體事件（如產品發佈、收購、回購計畫）會觸發估值修復？\n反面論點： 什麼情況下你會承認自己判斷錯誤並果斷止損？" + summaryPrompt,
+            5: timeContext + "請深度拆解 [股票代號] 最新的財報（Earnings Call）：\n數據對抗： 將營收、EPS、毛利率與「市場預期（Consensus）」進行對比，指出 beat/miss 的具體百分比。\n財報「潛台詞」： 分析管理層在電話會議中對未來指引（Guidance）的語氣變化。\n非財務指標： 關注庫存周轉率、訂閱用戶數、或是研發投入比的異常變化。\n市場情緒解析： 為什麼股價在財報後出現了上漲/下跌？是利多出盡還是基本面反反轉？" + summaryPrompt,
+            6: timeContext + "請分析 [股票代號] 過去 5 年的財務質量演變，並判斷其「財務基因」是否正在優化：\n資本配置效率： 分析其自由現金流（FCF）是用於研發、股息派發、股份回購還是償還債務？\n獲利含金量： 營運現金流與淨利的比例是否長期大於 1？\n槓桿結構： 利息保障倍數與債務到期分佈。 結論要求： 根據 DuPont Analysis（杜邦分析法），說明其 ROE 的增長是來自於「利潤率」、「周轉率」還是「財務槓桿」？" + summaryPrompt,
+            7: timeContext + "請對 [股票代號] 進行多維度估值建模：\n相對估值： 提供過去 5 年的 P/E、P/S、EV/EBITDA 的分位點（Percentile），判斷目前處於歷史高位還是低位。\n絕對估值（DCF）： 假設未來 5 年自由現金流增長率為合理數值，折現率（WACC）及終值（Terminal Value）倍數，計算其每股內在價值。\n安全邊際： 目前股價較內在價值折價了多少？ 要求： 請給出「買入區間」、「合理價位」與「減持區間」。" + summaryPrompt,
+            8: timeContext + "分析 [股票代號] 的長期增長曲線與「期權價值」：\nTAM/SAM/SOM： 量化其潛在市場規模，並預估其市佔率提升的空間。\n技術曲線： 該公司在 AI、半導體或相關領域的研發投入如何轉化為實際營收？\n第二增長曲線： 除了核心業務，是否有正在孵化的新產品線可能在未來 5 年貢獻 20% 以上的營收？\n單元經濟（Unit Economics）： 隨著規模擴大，其邊際成本是否有效遞減？" + summaryPrompt,
+            9: timeContext + "請模擬一場針對 [股票代號] 的專業辯論。\n多方分析師（Bull）： 必須從「隱含增長率」與「結構性改進」出發，構建最強的買入邏輯。\n空方分析師（Bear）： 必須從「市場高估、週期性衰退、競爭惡化」出發，構建最強的沽空邏輯。 規則： 雙方必須互相反駁對方的關鍵數據點（例如：多方說營收增長，空方反駁是靠燒錢換來的）。 總結： 請扮演裁判，指出目前市場共識（Consensus）忽視了哪一個關鍵維度。" + summaryPrompt,
+            10: timeContext + "請為 [股票代號] 提供一份「擇時與倉位控制」建議：\n宏觀背景： 當前利率環境與行業週期是否利好該股？\n技術面配合： 結合移動平均線（20/50/200日）與 RSI 指標，目前是處於超買還是超賣？\n分批建倉策略： 如果現在買入，首筆資金比例應為多少？在什麼價格觸發分批加倉？\n出場計畫： 設定明確的止盈位（Take-profit）與止損位（Stop-loss），並給出觸發這些價位的「邏輯變更」前提（例如：除非營收增長低於 10%，否則不賣出）。" + summaryPrompt
         };
 
-        // 網頁載入時自動執行的動作 (讀取記憶的 API Key 與從網址抓股票代碼)
+        // 網頁載入時自動執行的動作
         window.onload = () => {
-            // 1. 自動帶入曾輸入過的 Gemini API Key
             const savedGeminiKey = localStorage.getItem('gemini_api_key');
             if(savedGeminiKey) {
                 document.getElementById('apiKey').value = savedGeminiKey;
-                // 如果有記憶鑰匙，自動在背景幫使用者測試並抓取模型清單
                 testApiKey(true); 
             }
-
-            // 2. 接收從 index.html 傳遞過來的股票代碼
             const urlParams = new URLSearchParams(window.location.search);
             const passedStock = urlParams.get('stock');
             if (passedStock) {
@@ -194,14 +211,11 @@
             }
         };
 
-        // 【新增】智能返回按鈕邏輯
+        // 智能返回按鈕邏輯
         function goBackToDashboard() {
-            // 如果是在手機或電腦上透過另開分頁 (window.open) 打開的
-            // 直接把這個分頁關掉，底下的看盤畫面就會原封不動地露出來
             if (window.opener) {
                 window.close();
             } 
-            // 確保萬一無法關閉（例如直接貼網址進來的），也能導航回首頁
             window.location.href = 'index.html';
         }
 
@@ -216,14 +230,15 @@
                 return;
             }
 
-            // 【核心升級】：將成功的金鑰永遠存入瀏覽器記憶中
             localStorage.setItem('gemini_api_key', apiKey);
-
             testBtn.textContent = "測試並掃描模型...";
             testBtn.disabled = true;
             testBtn.classList.replace('bg-gray-700', 'bg-amber-600');
+            
+            // 重置區塊
             outputConsole.style.color = '';
-            outputConsole.textContent = "⏳ 正在與 Google 伺服器連線，驗證金鑰並掃描可用模型清單...";
+            document.getElementById('summaryBox').classList.add('hidden');
+            outputConsole.textContent = "⏳ 正在與 Google 伺服器連線，驗證金鑰並進行黃金模型白名單過濾...";
 
             try {
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
@@ -231,37 +246,46 @@
 
                 if (response.ok) {
                     modelSelect.innerHTML = ''; 
-                    const availableModels = data.models.filter(m => m.supportedGenerationMethods.includes('generateContent'));
-                    let modelFound = false;
+                    
+                    // 【大掃除】：只允許使用者親自測試過、絕對成功的 8 個黃金模型！
+                    const allowedModels = [
+                        'gemini-2.5-flash',
+                        'gemini-flash-latest',
+                        'gemini-flash-lite-latest',
+                        'gemini-2.5-flash-lite',
+                        'gemini-3-flash-preview',
+                        'gemini-3.1-flash-lite',
+                        'gemini-3.5-flash',
+                        'gemini-robotics-er-1.6-preview'
+                    ];
 
-                    availableModels.forEach(m => {
-                        const option = document.createElement('option');
-                        const modelName = m.name.replace('models/', '');
-                        option.value = modelName;
-                        option.textContent = modelName;
-                        
-                        if (modelName === 'gemini-2.0-flash' || (modelName.includes('2.0-flash') && !modelFound)) {
-                            option.selected = true;
-                            modelFound = true;
-                        } else if (!modelFound && modelName.includes('1.5-pro')) {
-                            option.selected = true;
-                            modelFound = true;
+                    // 抓取 API 回傳的所有模型名稱
+                    const fetchedModels = data.models
+                        .filter(m => m.supportedGenerationMethods.includes('generateContent'))
+                        .map(m => m.name.replace('models/', ''));
+
+                    // 將 API 回傳的模型與我們的白名單進行比對過濾
+                    allowedModels.forEach(modelName => {
+                        // 只要是在白名單裡的，或者是我們強制保底的預設模型，才准加進下拉選單
+                        if (fetchedModels.includes(modelName) || modelName === 'gemini-2.5-flash') {
+                            const option = document.createElement('option');
+                            option.value = modelName;
+                            // 強制將 gemini-2.5-flash 設為預設標籤與首選
+                            if (modelName === 'gemini-2.5-flash') {
+                                option.textContent = modelName + ' (預設)';
+                                option.selected = true;
+                            } else {
+                                option.textContent = modelName;
+                            }
+                            modelSelect.appendChild(option);
                         }
-                        modelSelect.appendChild(option);
                     });
-
-                    if(modelSelect.options.length === 0) {
-                         const option = document.createElement('option');
-                         option.value = 'gemini-1.5-flash';
-                         option.textContent = 'gemini-1.5-flash (備用)';
-                         modelSelect.appendChild(option);
-                    }
 
                     testBtn.textContent = "✅ 連線成功";
                     testBtn.classList.replace('bg-amber-600', 'bg-bullGreen');
                     testBtn.classList.add('text-black', 'font-bold');
                     
-                    outputConsole.textContent = `✅ API 金鑰驗證成功！\n\n系統已將這把 Gemini 金鑰自動記憶。您以後打開這個頁面都不需要再重新貼上了！\n\n🎉 系統已自動為您抓取了 ${availableModels.length} 個可用模型！\n\n現在請直接點擊左側的「模組按鈕」開始分析股票吧！`;
+                    outputConsole.textContent = `✅ API 金鑰驗證成功！\n\n🎉 系統已為您清除無效的 Gemma、英文與 Image 模型。\n下拉選單現在只為您呈現經過測試驗證的 ${modelSelect.options.length} 個「黃金模型清單」！\n\n「時空幻覺」防護已啟動，現在輸入任何股票代碼都不會再被誤認為歷史年份！請直接點擊左側模組開始分析！`;
                     outputConsole.style.color = '#00E676';
                 } else {
                     throw new Error(data.error.message || "未知的 API 錯誤");
@@ -283,8 +307,10 @@
         async function runAnalysis(num) {
             const apiKey = document.getElementById('apiKey').value.trim();
             const stock = document.getElementById('stockInput').value.trim();
-            const selectedModel = document.getElementById('modelSelect').value || 'gemini-1.5-flash';
+            const selectedModel = document.getElementById('modelSelect').value || 'gemini-2.5-flash';
             const outputConsole = document.getElementById('outputConsole');
+            const summaryBox = document.getElementById('summaryBox');
+            const summaryText = document.getElementById('summaryText');
             const statusTag = document.getElementById('statusTag');
             const statusDot = document.getElementById('statusDot');
 
@@ -297,9 +323,7 @@
                 return;
             }
 
-            // 每次執行也確認儲存，確保不會遺失
             localStorage.setItem('gemini_api_key', apiKey);
-
             const rawPrompt = promptTemplates[num];
             const finalPrompt = rawPrompt.replace(/\[股票代號\]|\[公司名稱\]/g, stock);
 
@@ -307,8 +331,10 @@
             statusTag.className = "text-xs bg-amber-500/20 px-2 py-1 rounded text-amber-400 font-mono animate-pulse";
             statusDot.className = "w-2 h-2 rounded-full bg-amber-500 animate-ping";
             
+            // 執行前清空畫面與隱藏懶人包
             outputConsole.style.color = '';
-            outputConsole.textContent = `🚀 正在調用【${selectedModel}】模型分析【${stock}】...\n請耐心等候幾秒鐘...`;
+            summaryBox.classList.add('hidden');
+            outputConsole.textContent = `🚀 正在調用【${selectedModel}】模型分析【${stock}】...\n並強制採用 2026 年市場數據基準...\n請耐心等候幾秒鐘...`;
 
             try {
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${apiKey}`, {
@@ -326,8 +352,28 @@
                 }
 
                 if (data.candidates && data.candidates.length > 0) {
-                    const aiResult = data.candidates[0].content.parts[0].text;
-                    outputConsole.textContent = aiResult;
+                    let aiResult = data.candidates[0].content.parts[0].text;
+                    
+                    // 【智能截斷器】：自動找出懶人包分隔線並拆開顯示
+                    let parts = aiResult.split("====懶人包分隔線====");
+                    
+                    // 備用防呆：如果 AI 忘記打分隔線，用標題抓
+                    if(parts.length === 1) parts = aiResult.split("【🎯 一秒看懂總結 (懶人包)】");
+                    if(parts.length === 1) parts = aiResult.split("🎯 一秒看懂總結");
+
+                    if (parts.length > 1) {
+                        // 成功拆分
+                        outputConsole.textContent = parts[0].trim();
+                        // 移除第二段可能帶有的多餘 markdown 標籤
+                        let cleanSummary = parts[1].replace(/^[#\*\-\s]+/, '').replace(/懶人包[：:]/g, '').trim();
+                        summaryText.textContent = cleanSummary;
+                        summaryBox.classList.remove('hidden'); // 顯示獨立區塊
+                    } else {
+                        // 如果真的沒抓到分隔，就整塊印出
+                        outputConsole.textContent = aiResult;
+                        summaryBox.classList.add('hidden');
+                    }
+
                     statusTag.textContent = "SUCCESS";
                     statusTag.className = "text-xs bg-bullGreen/20 px-2 py-1 rounded text-bullGreen font-mono";
                     statusDot.className = "w-2 h-2 rounded-full bg-bullGreen";
@@ -336,7 +382,7 @@
                 }
 
             } catch (error) {
-                outputConsole.textContent = `❌ 執行失敗！\n\n您目前選擇的模型為：${selectedModel}\n\nGoogle 伺服器報錯：\n${error.message}\n\n💡 解決建議：請嘗試在上方下拉選單切換其他模型（例如 gemini-1.5-flash）再執行一次！`;
+                outputConsole.textContent = `❌ 執行失敗！\n\n您目前選擇的模型為：${selectedModel}\n\nGoogle 伺服器報錯：\n${error.message}\n\n💡 解決建議：請嘗試在上方下拉選單切換其他模型再執行一次！`;
                 statusTag.textContent = "ERROR";
                 statusTag.className = "text-xs bg-bearRed/20 px-2 py-1 rounded text-bearRed font-mono";
                 statusDot.className = "w-2 h-2 rounded-full bg-bearRed";
