@@ -335,8 +335,9 @@
       <button onclick="triggerBackend()" style="width:100%; background:linear-gradient(180deg, #332200 0%, #110a00 100%); border:none; border-bottom:1px solid #aa8800; color:#ffcc00; padding:12px; font-size:16px; font-weight:bold; cursor:pointer; letter-spacing: 1px; transition:0.2s;" onmouseover="this.style.background='linear-gradient(180deg, #4a3200 0%, #1a1000 100%)'" onmouseout="this.style.background='linear-gradient(180deg, #332200 0%, #110a00 100%)'">
         ⚡ 股海尋寶系統 (開啟 Python 選單)
       </button>
-      <div style="padding: 10px;">
+      <div style="padding: 10px; display: flex; flex-direction: column; gap: 8px;">
         <button onclick="triggerStrategy()" style="width:100%; background:linear-gradient(180deg, #aa1111 0%, #660000 100%); border:1px solid #ff3333; color:#fff; padding:10px; font-size:16px; cursor:pointer; font-weight:bold; letter-spacing: 2px; border-radius:4px;">🚀 策略分析選單</button>
+        <button onclick="window.open('ai_analyzer.html?stock=' + document.getElementById('code-input').value, '_blank')" style="width:100%; background:linear-gradient(180deg, #0f253e 0%, #0a1f33 100%); border:1px solid var(--cy); color:var(--cy); padding:10px; font-size:16px; cursor:pointer; font-weight:bold; letter-spacing: 1px; border-radius:4px; transition:0.2s;" onmouseover="this.style.background='linear-gradient(180deg, #163659 0%, #0f253e 100%)'" onmouseout="this.style.background='linear-gradient(180deg, #0f253e 0%, #0a1f33 100%)'">🤖 十組專業的 AI 股票分析指令</button>
       </div>
     </div>
 

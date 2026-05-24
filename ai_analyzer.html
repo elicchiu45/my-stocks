@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 股票自動化核心分析艙</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#0B132B',
+                        darkCard: '#1C2541',
+                        bullGreen: '#00E676',
+                        bearRed: '#FF1744',
+                        aiGold: '#FFD600',
+                        techBlue: '#00B0FF'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-darkBg text-gray-200 min-h-screen p-4 sm:p-6 font-sans">
+
+    <header class="max-w-7xl mx-auto mb-6 border-b border-gray-800 pb-4 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-3 w-full md:w-auto">
+            <button onclick="goBackToDashboard()" class="bg-gray-800 hover:bg-gray-700 text-gray-300 px-3 py-1.5 rounded-lg text-sm transition-all border border-gray-600 flex items-center gap-2 shadow-lg">
+                <span>🔙</span> 返回看盤
+            </button>
+            <div class="w-3 h-3 rounded-full bg-aiGold animate-pulse hidden sm:block"></div>
+            <h1 class="text-xl font-bold tracking-wider text-white"><span class="text-aiGold">AI</span> 分析艙</h1>
+        </div>
+        
+        <div class="flex flex-wrap items-end gap-4 w-full md:w-auto justify-end">
+            <div>
+                <label class="text-xs text-gray-400 block mb-1">Gemini API 金鑰：</label>
+                <div class="flex gap-2">
+                    <input type="password" id="apiKey" placeholder="請貼上 AIzaSy 開頭字串" class="bg-gray-900 border border-gray-700 rounded px-3 py-1.5 text-sm text-white w-48 focus:outline-none focus:border-aiGold">
+                    <button id="testBtn" onclick="testApiKey()" class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1.5 rounded text-sm transition-all border border-gray-600">
+                        測試連線
+                    </button>
+                </div>
+            </div>
+            <div>
+                <label class="text-xs text-gray-400 block mb-1">選擇 AI 模型：</label>
+                <select id="modelSelect" class="bg-gray-900 border border-gray-700 rounded px-3 py-1.5 text-sm text-white w-48 focus:outline-none focus:border-aiGold">
+                    <option value="gemini-2.0-flash">gemini-2.0-flash (預設)</option>
+                    <option value="gemini-1.5-pro">gemini-1.5-pro</option>
+                    <option value="gemini-1.5-flash">gemini-1.5-flash</option>
+                </select>
+            </div>
+            <div>
+                <label class="text-xs text-gray-400 block mb-1">目標股票：</label>
+                <input type="text" id="stockInput" value="3661" class="bg-gray-900 border border-gray-700 rounded px-3 py-1.5 text-lg font-bold text-bullGreen w-24 text-center focus:outline-none focus:border-bullGreen">
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <div class="lg:col-span-5 space-y-2.5 bg-gray-900/40 p-4 rounded-xl border border-gray-800 max-h-[750px] overflow-y-auto">
+            <h2 class="text-xs font-semibold text-gray-400 mb-3 tracking-wider">💡 點擊下方模組・直接一鍵生成報告</h2>
+            
+            <button onclick="runAnalysis(1)" class="w-full text-left bg-darkCard hover:border-bullGreen/50 border border-gray-700 p-3 rounded-lg transition-all flex items-center justify-between group">
+                <div>
+                    <span class="text-xs text-techBlue font-mono block">M01 . 長線價值</span>
+                    <span class="font-medium text-white text-sm group-hover:text-bullGreen">深度企業基本面分析</span>
+                </div>
+                <span class="text-gray-500 text-xs">⚡</span>
+            </button>
+
+            <button onclick="runAnalysis(2)" class="w-full text-left bg-darkCard hover:border-bullGreen/50 border border-gray-700 p-3 rounded-lg transition-all flex items-center justify-between group">
+                <div>
+                    <span class="text-xs text-techBlue font-mono block">M02 . 長線價值</span>
+                    <span class="font-medium text-white text-sm group-hover:text-bullGreen">競爭護城河與市場地位</span>
+                </div>
+                <span class="text-gray-500 text-xs">⚡</span>
+            </button>
+
+            <button onclick="runAnalysis(3)" class="w-full text-left bg-darkCard hover:border-bearRed/50 border border-gray-700 p-3 rounded-lg transition-all flex items-center justify-between group">
+                <div>
+                    <span class="text-xs text-bearRed font-mono block">M03 . 風險管理</span>
+                    <span class="font-medium text-white text-sm group-hover:text-bearRed">風險矩陣與黑天鵝掃描</span>
+                </div>
+                <span class="text-gray-500 text-xs">⚡</span>
+            </button>
+
+            <button onclick="runAnalysis(4)" class="w-full text-left bg-darkCard hover:border-aiGold/50 border border-gray-700 p-3 rounded-lg transition-all flex items-center justify-between group">
+                <div>
+                    <span class="text-xs text-aiGold font-mono block">M04 . 籌碼博弈</span>
+                    <span class="font-medium text-white text-sm group-hover:text-aiGold">避險基金經理人投資論點</span>
+                </div>
+                <span class="text-gray-500 text-xs">⚡</span>
+            </button>
+
+            <button onclick="runAnalysis(5)" class="w-full text-left bg-darkCard hover:border-techBlue/50 border border-gray-700 p-3 rounded-lg transition-all flex items-center justify-between group">
+                <div>
+                    <span class="text-xs text-techBlue font-mono block">M05 . 動態追蹤</span>
+                    <span class="font-medium text-white text-sm group-hover:text-techBlue">財報與法說會深度解讀</span>
+                </div>
+                <span class="text-gray-500 text-xs">⚡</span>
+            </button>
+
+            <button onclick="runAnalysis(6)" class="w-full text-left bg-darkCard hover:border-techBlue/50 border border-gray-700 p-3 rounded-lg transition-all flex items-center justify-between group">
+                <div>
+                    <span class="text-xs text-techBlue font-mono block">M06 . 財務體質</span>
+                    <span class="font-medium text-white text-sm group-hover:text-techBlue">五年財務趨勢與杜邦拆解</span>
+                </div>
+                <span class="text-gray-500 text-xs">⚡</span>
+            </button>
+
+            <button onclick="runAnalysis(7)" class="w-full text-left bg-darkCard hover:border-bearRed/50 border border-gray-700 p-3 rounded-lg transition-all flex items-center justify-between group">
+                <div>
+                    <span class="text-xs text-bearRed font-mono block">M07 . 精準估值</span>
+                    <span class="font-medium text-white text-sm group-hover:text-bearRed">DCF 估值模型與安全邊際</span>
+                </div>
+                <span class="text-gray-500 text-xs">⚡</span>
+            </button>
+
+            <button onclick="runAnalysis(8)" class="w-full text-left bg-darkCard hover:border-techBlue/50 border border-gray-700 p-3 rounded-lg transition-all flex items-center justify-between group">
+                <div>
+                    <span class="text-xs text-techBlue font-mono block">M08 . 前瞻願景</span>
+                    <span class="font-medium text-white text-sm group-hover:text-techBlue">TAM 規模與第二成長曲線</span>
+                </div>
+                <span class="text-gray-500 text-xs">⚡</span>
+            </button>
+
+            <button onclick="runAnalysis(9)" class="w-full text-left bg-darkCard hover:border-aiGold/50 border border-gray-700 p-3 rounded-lg transition-all flex items-center justify-between group">
+                <div>
+                    <span class="text-xs text-aiGold font-mono block">M09 . 盲點掃除</span>
+                    <span class="font-medium text-white text-sm group-hover:text-aiGold">分析師 Steel Man 多空辯論</span>
+                </div>
+                <span class="text-gray-500 text-xs">⚡</span>
+            </button>
+
+            <button onclick="runAnalysis(10)" class="w-full text-left bg-darkCard hover:border-bullGreen/50 border border-gray-700 p-3 rounded-lg transition-all flex items-center justify-between group">
+                <div>
+                    <span class="text-xs text-bullGreen font-mono block">M10 . 戰術操盤</span>
+                    <span class="font-medium text-white text-sm group-hover:text-bullGreen">技術指標控盤與倉位管理</span>
+                </div>
+                <span class="text-gray-500 text-xs">⚡</span>
+            </button>
+        </div>
+
+        <div class="lg:col-span-7 bg-darkCard border border-gray-800 rounded-xl p-5 flex flex-col min-h-[600px] lg:min-h-[auto]">
+            <div class="border-b border-gray-800 pb-3 mb-4 flex justify-between items-center">
+                <h2 class="font-bold text-base text-white flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-bullGreen" id="statusDot"></span>
+                    <span id="panelTitle">AI 專家診斷報告</span>
+                </h2>
+                <span id="statusTag" class="text-xs bg-gray-900 px-2 py-1 rounded text-gray-400 font-mono">STANDBY</span>
+            </div>
+            
+            <div id="outputConsole" class="flex-1 bg-gray-950 rounded-lg p-4 font-mono text-sm text-gray-300 overflow-y-auto whitespace-pre-wrap leading-relaxed select-text">
+                系統智能模型檢測功能已升級，並支援金鑰自動記憶！
+如果您是第一次使用，請先貼上 API Key 並點擊上方「測試連線」按鈕。
+系統將會自動找出您的金鑰支援的所有模型，並永遠記住您的設定！
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        const promptTemplates = {
+            1: "你是一位擁有 20 年經驗的華爾街資深股權分析師。請對 [股票代號] 進行深度「價值與增長」分析：\n商業模式與獲利結構： 拆解其主要收入來源，並分析其定價權（Pricing Power）。\n動態競爭優勢： 利用 Porter's Five Forces 模型評估其護城河是否在擴大（Widening）還是縮小。\n財務質量掃描： 專注於 ROE、ROIC 的趨勢，以及營運現金流與淨利的匹配度。\n情境預測： 請建立三個場景（Base, Bull, Bear Case），分別給出未來 24 個月的目標價預期，並列出支撐各場景的核心假設（Assumptions）。",
+            2: "請評估 [股票代號] 的競爭壁壘（Economic Moat）。請採用 Morningstar 的框架，針對以下維度進行 1-10 分的定量評分，並提供定性理由：\n無形資產： 品牌溢價能力、專利佈局、監管准入。\n轉換成本： 客戶流失率（Churn Rate）與黏性。\n網絡效應： 用戶基數增加如何提升平台價值。\n成本優勢： 規模效應或獨特資源。 要求： 請將其與競爭對手進行橫向對比，並判斷該公司的「結構性優勢」在未來 5 年內是否具備可持續性。",
+            3: "請對投資 [股票代號] 進行極壓測試（Stress Test）與風險識別。請將風險分為以下矩陣：\n宏觀風險： 利率敏感度、匯率波動、地緣政治影響。\n微觀風險： 供應鏈集中度、關鍵人才流失、研發失敗。\n尾部風險（Tail Risk）： 可能導致股價腰斬的「黑天鵝」事件。 要求： 請按「發生機率」與「影響程度」進行權重排序，並針對每一項風險提供一個投資者應監測的「先行指標（Leading Indicator）」。",
+            4: "你是一位專注於「成長股價值投資」的避險基金經理。請為 [股票代號] 撰寫一份投資提案（Investment Pitch）：\n核心投資論點（Core Thesis）： 為什麼市場目前的定價是錯誤的？（Variant Perception）。\n籌碼面分析： 分析 13F 報告中的機構持倉變動趨勢。\n關鍵催化劑（Catalysts）： 未來 6-12 個月內，哪些具體事件（如產品發佈、收購、回購計畫）會觸發估值修復？\n反面論點： 什麼情況下你會承認自己判斷錯誤並果斷止損？",
+            5: "請深度拆解 [股票代號] 最新的財報（Earnings Call）：\n數據對抗： 將營收、EPS、毛利率與「市場預期（Consensus）」進行對比，指出 beat/miss 的具體百分比。\n財報「潛台詞」： 分析管理層在電話會議中對未來指引（Guidance）的語氣變化。\n非財務指標： 關注庫存周轉率、訂閱用戶數、或是研發投入比的異常變化。\n市場情緒解析： 為什麼股價在財報後出現了上漲/下跌？是利多出盡還是基本面反反轉？",
+            6: "請分析 [股票代號] 過去 5 年的財務質量演變，並判斷其「財務基因」是否正在優化：\n資本配置效率： 分析其自由現金流（FCF）是用於研發、股息派發、股份回購還是償還債務？\n獲利含金量： 營運現金流與淨利的比例是否長期大於 1？\n槓桿結構： 利息保障倍數與債務到期分佈。 結論要求： 根據 DuPont Analysis（杜邦分析法），說明其 ROE 的增長是來自於「利潤率」、「周轉率」還是「財務槓桿」？",
+            7: "請對 [股票代號] 進行多維度估值建模：\n相對估值： 提供過去 5 年的 P/E、P/S、EV/EBITDA 的分位點（Percentile），判斷目前處於歷史高位還是低位。\n絕對估值（DCF）： 假設未來 5 年自由現金流增長率為合理數值，折現率（WACC）及終值（Terminal Value）倍數，計算其每股內在價值。\n安全邊際： 目前股價較內在價值折價了多少？ 要求： 請給出「買入區間」、「合理價位」與「減持區間」。",
+            8: "分析 [股票代號] 的長期增長曲線與「期權價值」：\nTAM/SAM/SOM： 量化其潛在市場規模，並預估其市佔率提升的空間。\n技術曲線： 該公司在 AI、半導體或相關領域的研發投入如何轉化為實際營收？\n第二增長曲線： 除了核心業務，是否有正在孵化的新產品線可能在未來 5 年貢獻 20% 以上的營收？\n單元經濟（Unit Economics）： 隨著規模擴大，其邊際成本是否有效遞減？",
+            9: "請模擬一場針對 [股票代號] 的專業辯論。\n多方分析師（Bull）： 必須從「隱含增長率」與「結構性改進」出發，構建最強的買入邏輯。\n空方分析師（Bear）： 必須從「市場高估、週期性衰退、競爭惡化」出發，構建最強的沽空邏輯。 規則： 雙方必須互相反駁對方的關鍵數據點（例如：多方說營收增長，空方反駁是靠燒錢換來的）。 總結： 請扮演裁判，指出目前市場共識（Consensus）忽視了哪一個關鍵維度。",
+            10: "請為 [股票代號] 提供一份「擇時與倉位控制」建議：\n宏觀背景： 當前利率環境與行業週期是否利好該股？\n技術面配合： 結合移動平均線（20/50/200日）與 RSI 指標，目前是處於超買還是超賣？\n分批建倉策略： 如果現在買入，首筆資金比例應為多少？在什麼價格觸發分批加倉？\n出場計畫： 設定明確的止盈位（Take-profit）與止損位（Stop-loss），並給出觸發這些價位的「邏輯變更」前提（例如：除非營收增長低於 10%，否則不賣出）。"
+        };
+
+        // 網頁載入時自動執行的動作 (讀取記憶的 API Key 與從網址抓股票代碼)
+        window.onload = () => {
+            // 1. 自動帶入曾輸入過的 Gemini API Key
+            const savedGeminiKey = localStorage.getItem('gemini_api_key');
+            if(savedGeminiKey) {
+                document.getElementById('apiKey').value = savedGeminiKey;
+                // 如果有記憶鑰匙，自動在背景幫使用者測試並抓取模型清單
+                testApiKey(true); 
+            }
+
+            // 2. 接收從 index.html 傳遞過來的股票代碼
+            const urlParams = new URLSearchParams(window.location.search);
+            const passedStock = urlParams.get('stock');
+            if (passedStock) {
+                document.getElementById('stockInput').value = passedStock;
+            }
+        };
+
+        // 【新增】智能返回按鈕邏輯
+        function goBackToDashboard() {
+            // 如果是在手機或電腦上透過另開分頁 (window.open) 打開的
+            // 直接把這個分頁關掉，底下的看盤畫面就會原封不動地露出來
+            if (window.opener) {
+                window.close();
+            } 
+            // 確保萬一無法關閉（例如直接貼網址進來的），也能導航回首頁
+            window.location.href = 'index.html';
+        }
+
+        async function testApiKey(isAuto = false) {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const testBtn = document.getElementById('testBtn');
+            const outputConsole = document.getElementById('outputConsole');
+            const modelSelect = document.getElementById('modelSelect');
+
+            if (!apiKey) {
+                if(!isAuto) alert('請先在左側輸入框貼上 API 金鑰！');
+                return;
+            }
+
+            // 【核心升級】：將成功的金鑰永遠存入瀏覽器記憶中
+            localStorage.setItem('gemini_api_key', apiKey);
+
+            testBtn.textContent = "測試並掃描模型...";
+            testBtn.disabled = true;
+            testBtn.classList.replace('bg-gray-700', 'bg-amber-600');
+            outputConsole.style.color = '';
+            outputConsole.textContent = "⏳ 正在與 Google 伺服器連線，驗證金鑰並掃描可用模型清單...";
+
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    modelSelect.innerHTML = ''; 
+                    const availableModels = data.models.filter(m => m.supportedGenerationMethods.includes('generateContent'));
+                    let modelFound = false;
+
+                    availableModels.forEach(m => {
+                        const option = document.createElement('option');
+                        const modelName = m.name.replace('models/', '');
+                        option.value = modelName;
+                        option.textContent = modelName;
+                        
+                        if (modelName === 'gemini-2.0-flash' || (modelName.includes('2.0-flash') && !modelFound)) {
+                            option.selected = true;
+                            modelFound = true;
+                        } else if (!modelFound && modelName.includes('1.5-pro')) {
+                            option.selected = true;
+                            modelFound = true;
+                        }
+                        modelSelect.appendChild(option);
+                    });
+
+                    if(modelSelect.options.length === 0) {
+                         const option = document.createElement('option');
+                         option.value = 'gemini-1.5-flash';
+                         option.textContent = 'gemini-1.5-flash (備用)';
+                         modelSelect.appendChild(option);
+                    }
+
+                    testBtn.textContent = "✅ 連線成功";
+                    testBtn.classList.replace('bg-amber-600', 'bg-bullGreen');
+                    testBtn.classList.add('text-black', 'font-bold');
+                    
+                    outputConsole.textContent = `✅ API 金鑰驗證成功！\n\n系統已將這把 Gemini 金鑰自動記憶。您以後打開這個頁面都不需要再重新貼上了！\n\n🎉 系統已自動為您抓取了 ${availableModels.length} 個可用模型！\n\n現在請直接點擊左側的「模組按鈕」開始分析股票吧！`;
+                    outputConsole.style.color = '#00E676';
+                } else {
+                    throw new Error(data.error.message || "未知的 API 錯誤");
+                }
+            } catch (error) {
+                testBtn.textContent = "❌ 連線失敗";
+                testBtn.classList.replace('bg-amber-600', 'bg-bearRed');
+                outputConsole.textContent = `❌ 金鑰驗證失敗！\n\nGoogle 伺服器回報錯誤：\n${error.message}`;
+                outputConsole.style.color = '#FF1744';
+            } finally {
+                setTimeout(() => {
+                    testBtn.textContent = "測試連線";
+                    testBtn.disabled = false;
+                    testBtn.className = "bg-gray-700 hover:bg-gray-600 text-white px-3 py-1.5 rounded text-sm transition-all border border-gray-600";
+                }, 4000);
+            }
+        }
+
+        async function runAnalysis(num) {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const stock = document.getElementById('stockInput').value.trim();
+            const selectedModel = document.getElementById('modelSelect').value || 'gemini-1.5-flash';
+            const outputConsole = document.getElementById('outputConsole');
+            const statusTag = document.getElementById('statusTag');
+            const statusDot = document.getElementById('statusDot');
+
+            if (!apiKey) {
+                alert('🛑 請先填入 API 金鑰！');
+                return;
+            }
+            if (!stock) {
+                alert('🛑 請輸入股票代號或中文名稱！');
+                return;
+            }
+
+            // 每次執行也確認儲存，確保不會遺失
+            localStorage.setItem('gemini_api_key', apiKey);
+
+            const rawPrompt = promptTemplates[num];
+            const finalPrompt = rawPrompt.replace(/\[股票代號\]|\[公司名稱\]/g, stock);
+
+            statusTag.textContent = "RUNNING";
+            statusTag.className = "text-xs bg-amber-500/20 px-2 py-1 rounded text-amber-400 font-mono animate-pulse";
+            statusDot.className = "w-2 h-2 rounded-full bg-amber-500 animate-ping";
+            
+            outputConsole.style.color = '';
+            outputConsole.textContent = `🚀 正在調用【${selectedModel}】模型分析【${stock}】...\n請耐心等候幾秒鐘...`;
+
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: finalPrompt }] }]
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error.message || "發生未知錯誤");
+                }
+
+                if (data.candidates && data.candidates.length > 0) {
+                    const aiResult = data.candidates[0].content.parts[0].text;
+                    outputConsole.textContent = aiResult;
+                    statusTag.textContent = "SUCCESS";
+                    statusTag.className = "text-xs bg-bullGreen/20 px-2 py-1 rounded text-bullGreen font-mono";
+                    statusDot.className = "w-2 h-2 rounded-full bg-bullGreen";
+                } else {
+                    throw new Error("模型未返回任何結果，可能觸發了安全限制。");
+                }
+
+            } catch (error) {
+                outputConsole.textContent = `❌ 執行失敗！\n\n您目前選擇的模型為：${selectedModel}\n\nGoogle 伺服器報錯：\n${error.message}\n\n💡 解決建議：請嘗試在上方下拉選單切換其他模型（例如 gemini-1.5-flash）再執行一次！`;
+                statusTag.textContent = "ERROR";
+                statusTag.className = "text-xs bg-bearRed/20 px-2 py-1 rounded text-bearRed font-mono";
+                statusDot.className = "w-2 h-2 rounded-full bg-bearRed";
+            }
+        }
+    </script>
+</body>
+</html>
